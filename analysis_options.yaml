@@ -1,0 +1,10 @@
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  exclude:
+    - backup_before_role_fix_*/**
+
+linter:
+  rules:
+    # avoid_print: false
+    # prefer_single_quotes: true

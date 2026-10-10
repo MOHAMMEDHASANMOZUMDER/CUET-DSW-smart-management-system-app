@@ -1,0 +1,733 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function userExists(uid) {
+      return exists(/databases/$(database)/documents/users/$(uid));
+    }
+
+    function userProfile(uid) {
+      return get(/databases/$(database)/documents/users/$(uid));
+    }
+
+    function currentRole() {
+      return signedIn() && userExists(request.auth.uid)
+        ? userProfile(request.auth.uid).data.role
+        : 'none';
+    }
+
+    function isStudent() {
+      return currentRole() in ['student', 'Student', 'STUDENT'];
+    }
+
+    function isOfficer() {
+      return currentRole() in ['dsw_officer', 'officer', 'DSW Officer', 'Officer', 'OFFICER'];
+    }
+
+    function isDirector() {
+      return currentRole() in ['dsw_director', 'director', 'DSW Director', 'Director', 'DIRECTOR'];
+    }
+
+    function isStaff() {
+      return isOfficer() || isDirector();
+    }
+
+    function currentStudentId() {
+      return signedIn() && userExists(request.auth.uid)
+        ? userProfile(request.auth.uid).data.get('studentId', '')
+        : '';
+    }
+
+    function applicationExists(id) {
+      return exists(/databases/$(database)/documents/applications/$(id));
+    }
+
+    function applicationDoc(id) {
+      return get(/databases/$(database)/documents/applications/$(id));
+    }
+
+    function complaintExists(id) {
+      return exists(/databases/$(database)/documents/complaints/$(id));
+    }
+
+    function complaintDoc(id) {
+      return get(/databases/$(database)/documents/complaints/$(id));
+    }
+
+    function serviceRequestExists(id) {
+      return exists(/databases/$(database)/documents/service_requests/$(id));
+    }
+
+    function serviceRequestDoc(id) {
+      return get(/databases/$(database)/documents/service_requests/$(id));
+    }
+
+    function sameApplicationIdentity() {
+      return request.resource.data.studentId == resource.data.studentId &&
+        request.resource.data.get('studentUid', '') ==
+          resource.data.get('studentUid', '') &&
+        request.resource.data.type == resource.data.type;
+    }
+
+    function sameComplaintIdentity() {
+      return request.resource.data.studentId == resource.data.studentId &&
+        request.resource.data.get('studentUid', '') ==
+          resource.data.get('studentUid', '');
+    }
+
+    function sameServiceRequestIdentity() {
+      return request.resource.data.studentUid == resource.data.studentUid &&
+        request.resource.data.studentId == resource.data.studentId &&
+        request.resource.data.requestType == resource.data.requestType;
+    }
+
+    function validApplicationOfficerTransition() {
+      return resource.data.status in ['SUBMITTED', 'RESUBMITTED'] &&
+        request.resource.data.status in [
+          'CORRECTION_REQUIRED',
+          'OFFICER_REVIEW_COMPLETE'
+        ];
+    }
+
+    function validApplicationDirectorTransition() {
+      return (
+        resource.data.status == 'OFFICER_REVIEW_COMPLETE' &&
+        request.resource.data.status in ['APPROVED', 'REJECTED']
+      ) || (
+        resource.data.type == 'character_certificate' &&
+        resource.data.status == 'APPROVED' &&
+        request.resource.data.status == 'CERTIFICATE_ISSUED'
+      );
+    }
+
+    function validComplaintOfficerTransition() {
+      return resource.data.status in ['SUBMITTED', 'RESUBMITTED'] &&
+        request.resource.data.status in [
+          'CORRECTION_REQUIRED',
+          'OFFICER_REVIEW_COMPLETE'
+        ];
+    }
+
+    function validComplaintDirectorTransition() {
+      return resource.data.status == 'OFFICER_REVIEW_COMPLETE' &&
+        request.resource.data.status == 'RESOLVED';
+    }
+
+    function validServiceOfficerTransition() {
+      return resource.data.status in ['SUBMITTED', 'RESUBMITTED'] &&
+        request.resource.data.status in [
+          'CORRECTION_REQUIRED',
+          'OFFICER_REVIEW_COMPLETE'
+        ];
+    }
+
+    function validServiceDirectorTransition() {
+      return resource.data.status == 'OFFICER_REVIEW_COMPLETE' &&
+        request.resource.data.status in ['APPROVED', 'REJECTED', 'RESOLVED'];
+    }
+
+    // =========================================================
+    // CUET STUDENT REGISTRY
+    // =========================================================
+    match /student_registry/{studentId} {
+      allow get: if signedIn();
+      allow list: if signedIn() && isDirector();
+
+      allow create, update: if signedIn() &&
+        isDirector() &&
+        request.resource.data.studentId == studentId &&
+        request.resource.data.name is string &&
+        request.resource.data.name.size() > 0 &&
+        request.resource.data.active is bool;
+
+      allow delete: if false;
+    }
+
+    // =========================================================
+    // USERS
+    // =========================================================
+    match /users/{userId} {
+      allow read: if signedIn() && (
+        request.auth.uid == userId || isOfficer() || isDirector()
+      );
+
+      allow create: if signedIn() &&
+        request.auth.uid == userId &&
+        request.resource.data.uid == userId &&
+        request.resource.data.email == request.auth.token.email &&
+        request.resource.data.role == 'student' &&
+        request.resource.data.studentId is string &&
+        request.resource.data.studentId.size() > 0;
+
+      allow update: if signedIn() && (
+        (
+          request.auth.uid == userId &&
+          resource.data.role == 'student' &&
+          request.resource.data.role == 'student' &&
+          request.resource.data.studentId == resource.data.studentId &&
+          request.resource.data.email == resource.data.email &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'phone',
+            'updatedAt'
+          ])
+        ) || (
+          isDirector() &&
+          resource.data.role == 'student' &&
+          request.resource.data.role == resource.data.role &&
+          request.resource.data.studentId == resource.data.studentId &&
+          request.resource.data.email == resource.data.email &&
+          request.resource.data.hall is string &&
+          request.resource.data.hall.size() > 0 &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'hall',
+            'updatedAt'
+          ])
+        )
+      );
+
+      allow delete: if false;
+    }
+
+    // =========================================================
+    // APPLICATIONS
+    // Student -> all Officers -> Director final decision
+    // =========================================================
+    match /applications/{applicationId} {
+      allow create: if signedIn() &&
+        isStudent() &&
+        request.resource.data.studentId == currentStudentId() &&
+        request.resource.data.studentUid == request.auth.uid &&
+        request.resource.data.status == 'SUBMITTED' &&
+        request.resource.data.documents is list &&
+        request.resource.data.type in [
+          'character_certificate',
+          'hall_transfer'
+        ];
+
+      allow read: if signedIn() && (
+        (
+          isStudent() &&
+          (
+            resource.data.get('studentUid', '') == request.auth.uid ||
+            (
+              resource.data.get('studentUid', '') == '' &&
+              resource.data.studentId == currentStudentId()
+            )
+          )
+        ) ||
+        isStaff()
+      );
+
+      allow update: if signedIn() && (
+        // Student may only correct and resubmit their own application.
+        (
+          isStudent() &&
+          resource.data.get('studentUid', '') == request.auth.uid &&
+          sameApplicationIdentity() &&
+          resource.data.status == 'CORRECTION_REQUIRED' &&
+          request.resource.data.status == 'RESUBMITTED' &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'purpose',
+            'description',
+            'currentHall',
+            'requestedHall',
+            'reason',
+            'status',
+            'updatedAt'
+          ])
+        ) ||
+        // Any DSW Officer may review any submitted/resubmitted application.
+        (
+          isOfficer() &&
+          sameApplicationIdentity() &&
+          validApplicationOfficerTransition() &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'status',
+            'updatedAt',
+            'currentReviewer',
+            'officerComment',
+            'correctionNote'
+          ])
+        ) ||
+        // Only the DSW Director may approve/reject/issue a certificate.
+        (
+          isDirector() &&
+          sameApplicationIdentity() &&
+          validApplicationDirectorTransition() &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'status',
+            'updatedAt',
+            'currentReviewer',
+            'directorComment'
+          ])
+        )
+      );
+
+      allow delete: if false;
+    }
+
+    // =========================================================
+    // COMPLAINTS
+    // Student -> all Officers -> Director final resolution
+    // =========================================================
+    match /complaints/{complaintId} {
+      allow create: if signedIn() &&
+        isStudent() &&
+        request.resource.data.studentId == currentStudentId() &&
+        request.resource.data.studentUid == request.auth.uid &&
+        request.resource.data.status == 'SUBMITTED' &&
+        request.resource.data.title is string &&
+        request.resource.data.description is string &&
+        request.resource.data.category is string &&
+        request.resource.data.priority is string;
+
+      allow read: if signedIn() && (
+        (
+          isStudent() &&
+          (
+            resource.data.get('studentUid', '') == request.auth.uid ||
+            (
+              resource.data.get('studentUid', '') == '' &&
+              resource.data.studentId == currentStudentId()
+            )
+          )
+        ) ||
+        isStaff()
+      );
+
+      allow update: if signedIn() && (
+        // Student-side AI enrichment while still freshly submitted.
+        (
+          isStudent() &&
+          resource.data.get('studentUid', '') == request.auth.uid &&
+          sameComplaintIdentity() &&
+          resource.data.status == 'SUBMITTED' &&
+          request.resource.data.status == 'SUBMITTED' &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'aiSuggestedCategory',
+            'aiSuggestedPriority',
+            'aiSummary',
+            'aiSuggestedDepartment',
+            'aiDuplicateScore',
+            'aiDuplicateComplaintId',
+            'aiDuplicateReason',
+            'aiImageAssessment',
+            'updatedAt'
+          ])
+        ) ||
+        // Student correction/resubmission.
+        (
+          isStudent() &&
+          resource.data.get('studentUid', '') == request.auth.uid &&
+          sameComplaintIdentity() &&
+          resource.data.status == 'CORRECTION_REQUIRED' &&
+          request.resource.data.status == 'RESUBMITTED' &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'title',
+            'description',
+            'category',
+            'status',
+            'updatedAt'
+          ])
+        ) ||
+        // Staff may rerun advisory AI without changing workflow status.
+        (
+          isStaff() &&
+          sameComplaintIdentity() &&
+          request.resource.data.status == resource.data.status &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'aiSuggestedCategory',
+            'aiSuggestedPriority',
+            'aiSummary',
+            'aiSuggestedDepartment',
+            'aiDuplicateScore',
+            'aiDuplicateComplaintId',
+            'aiDuplicateReason',
+            'aiImageAssessment',
+            'updatedAt'
+          ])
+        ) ||
+        // Any Officer may edit review fields before sending to Director.
+        (
+          isOfficer() &&
+          sameComplaintIdentity() &&
+          resource.data.status in ['SUBMITTED', 'RESUBMITTED'] &&
+          request.resource.data.status == resource.data.status &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'category',
+            'priority',
+            'officerResponse',
+            'updatedAt'
+          ])
+        ) ||
+        // Any Officer may request resubmission or complete review.
+        (
+          isOfficer() &&
+          sameComplaintIdentity() &&
+          validComplaintOfficerTransition() &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'status',
+            'correctionNote',
+            'officerResponse',
+            'updatedAt'
+          ])
+        ) ||
+        // Only Director can resolve after Officer review is complete.
+        (
+          isDirector() &&
+          sameComplaintIdentity() &&
+          validComplaintDirectorTransition() &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'status',
+            'directorResponse',
+            'updatedAt'
+          ])
+        )
+      );
+
+      allow delete: if false;
+
+      match /statusHistory/{historyId} {
+        allow read: if signedIn() && complaintExists(complaintId) && (
+          (
+            isStudent() &&
+            complaintDoc(complaintId).data.get('studentUid', '') ==
+              request.auth.uid
+          ) ||
+          isStaff()
+        );
+
+        allow create: if signedIn() &&
+          complaintExists(complaintId) &&
+          request.resource.data.status in [
+            'SUBMITTED',
+            'CORRECTION_REQUIRED',
+            'RESUBMITTED',
+            'OFFICER_REVIEW_COMPLETE',
+            'RESOLVED'
+          ] &&
+          request.resource.data.note is string &&
+          request.resource.data.performedBy == request.auth.uid &&
+          (
+            (
+              isStudent() &&
+              complaintDoc(complaintId).data.get('studentUid', '') ==
+                request.auth.uid &&
+              request.resource.data.status in ['SUBMITTED', 'RESUBMITTED']
+            ) ||
+            (
+              isOfficer() &&
+              request.resource.data.status in [
+                'CORRECTION_REQUIRED',
+                'OFFICER_REVIEW_COMPLETE'
+              ]
+            ) ||
+            (
+              isDirector() &&
+              request.resource.data.status == 'RESOLVED'
+            )
+          );
+
+        allow update, delete: if false;
+      }
+    }
+
+    // =========================================================
+    // UNIFIED DSW SERVICE REQUESTS
+    // Student -> all Officers -> Director final decision
+    // =========================================================
+    match /service_requests/{requestId} {
+      allow create: if signedIn() &&
+        isStudent() &&
+        request.resource.data.studentUid == request.auth.uid &&
+        request.resource.data.studentId == currentStudentId() &&
+        request.resource.data.status == 'SUBMITTED' &&
+        request.resource.data.requestType in [
+          'hall_related',
+          'financial_assistance',
+          'student_welfare',
+          'event_permission',
+          'certificate_recommendation',
+          'general_grievance'
+        ] &&
+        request.resource.data.title is string &&
+        request.resource.data.description is string &&
+        request.resource.data.documents is list;
+
+      allow read: if signedIn() && (
+        (
+          isStudent() &&
+          (
+            resource.data.get('studentUid', '') == request.auth.uid ||
+            (
+              resource.data.get('studentUid', '') == '' &&
+              resource.data.studentId == currentStudentId()
+            )
+          )
+        ) ||
+        isStaff()
+      );
+
+      allow update: if signedIn() && (
+        // Student-side AI enrichment while request remains submitted.
+        (
+          isStudent() &&
+          resource.data.studentUid == request.auth.uid &&
+          sameServiceRequestIdentity() &&
+          resource.data.status == 'SUBMITTED' &&
+          request.resource.data.status == 'SUBMITTED' &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'aiSuggestedPriority',
+            'suggestedOffice',
+            'aiSummary',
+            'aiPriorityReason',
+            'aiRiskTags',
+            'aiDuplicateScore',
+            'aiDuplicateRequestId',
+            'aiDuplicateReason',
+            'aiImageAssessment',
+            'updatedAt'
+          ])
+        ) ||
+        // Student correction/resubmission.
+        (
+          isStudent() &&
+          resource.data.studentUid == request.auth.uid &&
+          sameServiceRequestIdentity() &&
+          resource.data.status == 'CORRECTION_REQUIRED' &&
+          request.resource.data.status == 'RESUBMITTED' &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'title',
+            'description',
+            'status',
+            'updatedAt'
+          ])
+        ) ||
+        // Any staff member may rerun advisory AI.
+        (
+          isStaff() &&
+          sameServiceRequestIdentity() &&
+          request.resource.data.status == resource.data.status &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'aiSuggestedPriority',
+            'suggestedOffice',
+            'aiSummary',
+            'aiPriorityReason',
+            'aiRiskTags',
+            'aiDuplicateScore',
+            'aiDuplicateRequestId',
+            'aiDuplicateReason',
+            'aiImageAssessment',
+            'updatedAt'
+          ])
+        ) ||
+        // Any Officer may request resubmission or send the review to Director.
+        (
+          isOfficer() &&
+          sameServiceRequestIdentity() &&
+          validServiceOfficerTransition() &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'status',
+            'correctionNote',
+            'officerReviewNote',
+            'updatedAt'
+          ])
+        ) ||
+        // Only Director may make a final decision after Officer review.
+        (
+          isDirector() &&
+          sameServiceRequestIdentity() &&
+          validServiceDirectorTransition() &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'status',
+            'resolutionNote',
+            'resolvedAt',
+            'updatedAt'
+          ])
+        )
+      );
+
+      allow delete: if false;
+
+      match /history/{historyId} {
+        allow read: if signedIn() && serviceRequestExists(requestId) && (
+          (
+            isStudent() &&
+            serviceRequestDoc(requestId).data.studentUid == request.auth.uid
+          ) ||
+          isStaff()
+        );
+
+        allow create: if signedIn() &&
+          serviceRequestExists(requestId) &&
+          request.resource.data.status in [
+            'SUBMITTED',
+            'CORRECTION_REQUIRED',
+            'RESUBMITTED',
+            'OFFICER_REVIEW_COMPLETE',
+            'APPROVED',
+            'REJECTED',
+            'RESOLVED'
+          ] &&
+          request.resource.data.action is string &&
+          request.resource.data.note is string &&
+          request.resource.data.performedBy == request.auth.uid &&
+          (
+            (
+              isStudent() &&
+              serviceRequestDoc(requestId).data.studentUid ==
+                request.auth.uid &&
+              request.resource.data.status in ['SUBMITTED', 'RESUBMITTED']
+            ) ||
+            (
+              isOfficer() &&
+              request.resource.data.status in [
+                'CORRECTION_REQUIRED',
+                'OFFICER_REVIEW_COMPLETE'
+              ]
+            ) ||
+            (
+              isDirector() &&
+              request.resource.data.status in [
+                'APPROVED',
+                'REJECTED',
+                'RESOLVED'
+              ]
+            )
+          );
+
+        allow update, delete: if false;
+      }
+    }
+
+    // =========================================================
+    // NOTIFICATIONS
+    // =========================================================
+    match /notifications/{notificationId} {
+      allow create: if signedIn() &&
+        request.resource.data.userUid is string &&
+        request.resource.data.title is string &&
+        request.resource.data.message is string &&
+        request.resource.data.type is string &&
+        request.resource.data.referenceId is string &&
+        request.resource.data.isRead == false &&
+        (
+          request.resource.data.userUid == request.auth.uid ||
+          (
+            isStaff() &&
+            request.resource.data.type == 'application_status' &&
+            applicationExists(request.resource.data.referenceId) &&
+            applicationDoc(request.resource.data.referenceId)
+              .data.get('studentUid', '') ==
+                request.resource.data.userUid
+          ) ||
+          (
+            isStaff() &&
+            request.resource.data.type == 'complaint_status' &&
+            complaintExists(request.resource.data.referenceId) &&
+            complaintDoc(request.resource.data.referenceId)
+              .data.get('studentUid', '') ==
+                request.resource.data.userUid
+          ) ||
+          (
+            isStaff() &&
+            request.resource.data.type == 'service_request_status' &&
+            serviceRequestExists(request.resource.data.referenceId) &&
+            serviceRequestDoc(request.resource.data.referenceId)
+              .data.studentUid == request.resource.data.userUid
+          )
+        );
+
+      allow read: if signedIn() &&
+        request.auth.uid == resource.data.userUid;
+
+      allow update: if signedIn() &&
+        request.auth.uid == resource.data.userUid &&
+        request.resource.data.userUid == resource.data.userUid &&
+        request.resource.data.isRead is bool &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'isRead'
+        ]);
+
+      allow delete: if false;
+    }
+
+    // =========================================================
+    // APPLICATION HISTORY
+    // =========================================================
+    match /application_history/{historyId} {
+      allow read: if signedIn() &&
+        applicationExists(resource.data.applicationId) &&
+        (
+          (
+            isStudent() &&
+            applicationDoc(resource.data.applicationId)
+              .data.get('studentUid', '') == request.auth.uid
+          ) ||
+          isStaff()
+        );
+
+      allow create: if signedIn() &&
+        request.resource.data.applicationId is string &&
+        applicationExists(request.resource.data.applicationId) &&
+        request.resource.data.performedBy == request.auth.uid &&
+        request.resource.data.comment is string &&
+        request.resource.data.timestamp is timestamp &&
+        (
+          (
+            isStudent() &&
+            applicationDoc(request.resource.data.applicationId)
+              .data.get('studentUid', '') == request.auth.uid &&
+            request.resource.data.action in [
+              'SUBMITTED',
+              'STUDENT_RESUBMITTED'
+            ]
+          ) ||
+          (
+            isOfficer() &&
+            request.resource.data.action in [
+              'CORRECTION_REQUIRED',
+              'OFFICER_REVIEW_COMPLETE'
+            ]
+          ) ||
+          (
+            isDirector() &&
+            request.resource.data.action in [
+              'APPROVED',
+              'REJECTED',
+              'CERTIFICATE_ISSUED'
+            ]
+          )
+        );
+
+      allow update, delete: if false;
+    }
+
+    // =========================================================
+    // AUDIT LOGS
+    // =========================================================
+    match /audit_logs/{logId} {
+      allow read: if signedIn() && isStaff();
+
+      allow create: if signedIn() &&
+        isStaff() &&
+        request.resource.data.actorId == request.auth.uid &&
+        request.resource.data.actorRole in [
+          'dsw_officer',
+          'dsw_director'
+        ] &&
+        request.resource.data.action is string &&
+        request.resource.data.targetType is string &&
+        request.resource.data.targetId is string &&
+        request.resource.data.timestamp is timestamp &&
+        request.resource.data.details is map;
+
+      allow update, delete: if false;
+    }
+  }
+}
