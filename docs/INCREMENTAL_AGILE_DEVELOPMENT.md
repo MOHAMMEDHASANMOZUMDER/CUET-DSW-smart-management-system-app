@@ -101,9 +101,17 @@ These are **example planning exercises**, not verified historical sprint records
 
 - Repository: https://github.com/MOHAMMEDHASANMOZUMDER/CUET-DSW-smart-management-system-app
 - Working branch: `incremental-agile-improvements`
-- Existing open Issues: none as of the 2026-11-22 repository inspection.
-- Existing open pull requests: none as of the 2026-11-22 repository inspection.
-- New issue and pull request links: to be inserted after GitHub artifacts are created.
+- Actual Issues created 2026-11-22:
+  - [Milestone 1: Authentication and project foundation](https://github.com/MOHAMMEDHASANMOZUMDER/CUET-DSW-smart-management-system-app/issues/1)
+  - [Milestone 2: Student services](https://github.com/MOHAMMEDHASANMOZUMDER/CUET-DSW-smart-management-system-app/issues/2)
+  - [Milestone 3: Complaint and request management](https://github.com/MOHAMMEDHASANMOZUMDER/CUET-DSW-smart-management-system-app/issues/3)
+  - [Milestone 4: DSW administrative workflow](https://github.com/MOHAMMEDHASANMOZUMDER/CUET-DSW-smart-management-system-app/issues/4)
+  - [Milestone 5: Gemini AI integration](https://github.com/MOHAMMEDHASANMOZUMDER/CUET-DSW-smart-management-system-app/issues/5)
+  - [Milestone 6: Testing, security, and documentation](https://github.com/MOHAMMEDHASANMOZUMDER/CUET-DSW-smart-management-system-app/issues/6)
+- Actual pull request created 2026-11-22: [PR #7](https://github.com/MOHAMMEDHASANMOZUMDER/CUET-DSW-smart-management-system-app/pull/7)
+- GitHub Actions runs created 2026-11-22:
+  - [Push workflow run](https://github.com/MOHAMMEDHASANMOZUMDER/CUET-DSW-smart-management-system-app/actions/runs/45001345161)
+  - [Pull request workflow run](https://github.com/MOHAMMEDHASANMOZUMDER/CUET-DSW-smart-management-system-app/actions/runs/45001384428)
 
 ## Acceptance criteria
 
