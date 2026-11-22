@@ -307,7 +307,9 @@ class _CharacterCertificateScreenState
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('File upload is disabled for this build configuration.'),
+            content: Text(
+              'File upload is disabled for this build configuration.',
+            ),
           ),
         );
       }
@@ -432,7 +434,10 @@ class _CharacterCertificateScreenState
                   prefixIcon: Icons.phone_outlined,
                   keyboardType: TextInputType.phone,
                   validator: (value) {
-                    final phone = (value ?? '').trim().replaceAll(RegExp(r'[\s-]'), '');
+                    final phone = (value ?? '').trim().replaceAll(
+                      RegExp(r'[\s-]'),
+                      '',
+                    );
                     if (phone.isEmpty) return null;
                     if (!RegExp(r'^\+?[0-9]{7,15}$').hasMatch(phone)) {
                       return 'Please enter a valid phone number';

@@ -22,8 +22,7 @@ class _StudentRegistryManagementScreenState
 
   Future<List<QueryDocumentSnapshot<Map<String, dynamic>>>> _load() async {
     final snapshot = await _registry.get();
-    final docs = snapshot.docs.toList()
-      ..sort((a, b) => a.id.compareTo(b.id));
+    final docs = snapshot.docs.toList()..sort((a, b) => a.id.compareTo(b.id));
     return docs;
   }
 
@@ -37,8 +36,9 @@ class _StudentRegistryManagementScreenState
       text: existing?.id ?? (data['studentId'] ?? '').toString(),
     );
     final name = TextEditingController(text: (data['name'] ?? '').toString());
-    final department =
-        TextEditingController(text: (data['department'] ?? '').toString());
+    final department = TextEditingController(
+      text: (data['department'] ?? '').toString(),
+    );
     final batch = TextEditingController(text: (data['batch'] ?? '').toString());
     final hall = TextEditingController(text: (data['hall'] ?? '').toString());
     var active = data['active'] != false;
@@ -176,87 +176,84 @@ class _StudentRegistryManagementScreenState
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(
-          title: const Text('Student Registry Management'),
-          actions: [
-            IconButton(
-              onPressed: _refresh,
-              tooltip: 'Refresh',
-              icon: const Icon(Icons.refresh),
+    appBar: AppBar(
+      title: const Text('Student Registry Management'),
+      actions: [
+        IconButton(
+          onPressed: _refresh,
+          tooltip: 'Refresh',
+          icon: const Icon(Icons.refresh),
+        ),
+      ],
+    ),
+    floatingActionButton: FloatingActionButton.extended(
+      onPressed: () => _openEditor(),
+      icon: const Icon(Icons.person_add_alt_1),
+      label: const Text('Add student'),
+    ),
+    body: FutureBuilder<List<QueryDocumentSnapshot<Map<String, dynamic>>>>(
+      future: _future,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (snapshot.hasError) {
+          final error = snapshot.error.toString();
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Text(
+                error.contains('permission-denied') ||
+                        error.contains('PERMISSION_DENIED')
+                    ? 'Student registry management is restricted to the DSW Director. Deploy the updated Firestore rules first, then sign in again.'
+                    : 'Could not load student registry: $error',
+                textAlign: TextAlign.center,
+              ),
             ),
-          ],
-        ),
-        floatingActionButton: FloatingActionButton.extended(
-          onPressed: () => _openEditor(),
-          icon: const Icon(Icons.person_add_alt_1),
-          label: const Text('Add student'),
-        ),
-        body: FutureBuilder<List<QueryDocumentSnapshot<Map<String, dynamic>>>>(
-          future: _future,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            if (snapshot.hasError) {
-              final error = snapshot.error.toString();
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
+          );
+        }
+        final docs =
+            snapshot.data ??
+            const <QueryDocumentSnapshot<Map<String, dynamic>>>[];
+        if (docs.isEmpty) {
+          return const Center(
+            child: Padding(
+              padding: EdgeInsets.all(24),
+              child: Text(
+                'No students are in the registry yet. Add a student before testing new student registration.',
+                textAlign: TextAlign.center,
+              ),
+            ),
+          );
+        }
+        return ListView.separated(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+          itemCount: docs.length,
+          separatorBuilder: (_, __) => const SizedBox(height: 8),
+          itemBuilder: (context, index) {
+            final doc = docs[index];
+            final data = doc.data();
+            final active = data['active'] != false;
+            final studentName = (data['name'] ?? '').toString().trim();
+            return Card(
+              child: ListTile(
+                leading: CircleAvatar(
                   child: Text(
-                    error.contains('permission-denied') ||
-                            error.contains('PERMISSION_DENIED')
-                        ? 'Student registry management is restricted to the DSW Director. Deploy the updated Firestore rules first, then sign in again.'
-                        : 'Could not load student registry: $error',
-                    textAlign: TextAlign.center,
+                    studentName.isEmpty ? '?' : studentName[0].toUpperCase(),
                   ),
                 ),
-              );
-            }
-            final docs = snapshot.data ??
-                const <QueryDocumentSnapshot<Map<String, dynamic>>>[];
-            if (docs.isEmpty) {
-              return const Center(
-                child: Padding(
-                  padding: EdgeInsets.all(24),
-                  child: Text(
-                    'No students are in the registry yet. Add a student before testing new student registration.',
-                    textAlign: TextAlign.center,
-                  ),
+                title: Text((data['name'] ?? 'Unnamed student').toString()),
+                subtitle: Text(
+                  '${doc.id}${(data['department'] ?? '').toString().isEmpty ? '' : ' · ${data['department']}'}${(data['hall'] ?? '').toString().isEmpty ? '' : '\n${data['hall']}'}',
                 ),
-              );
-            }
-            return ListView.separated(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
-              itemCount: docs.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 8),
-              itemBuilder: (context, index) {
-                final doc = docs[index];
-                final data = doc.data();
-                final active = data['active'] != false;
-                final studentName = (data['name'] ?? '').toString().trim();
-                return Card(
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      child: Text(
-                        studentName.isEmpty
-                            ? '?'
-                            : studentName[0].toUpperCase(),
-                      ),
-                    ),
-                    title: Text((data['name'] ?? 'Unnamed student').toString()),
-                    subtitle: Text(
-                      '${doc.id}${(data['department'] ?? '').toString().isEmpty ? '' : ' · ${data['department']}'}${(data['hall'] ?? '').toString().isEmpty ? '' : '\n${data['hall']}'}',
-                    ),
-                    isThreeLine: (data['hall'] ?? '').toString().isNotEmpty,
-                    trailing: Chip(
-                      label: Text(active ? 'Active' : 'Inactive'),
-                    ),
-                    onTap: () => _openEditor(existing: doc),
-                  ),
-                );
-              },
+                isThreeLine: (data['hall'] ?? '').toString().isNotEmpty,
+                trailing: Chip(label: Text(active ? 'Active' : 'Inactive')),
+                onTap: () => _openEditor(existing: doc),
+              ),
             );
           },
-        ),
-      );
+        );
+      },
+    ),
+  );
 }

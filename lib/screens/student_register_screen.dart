@@ -6,8 +6,7 @@ class StudentRegisterScreen extends StatefulWidget {
   const StudentRegisterScreen({super.key});
 
   @override
-  State<StudentRegisterScreen> createState() =>
-      _StudentRegisterScreenState();
+  State<StudentRegisterScreen> createState() => _StudentRegisterScreenState();
 }
 
 class _StudentRegisterScreenState extends State<StudentRegisterScreen> {
@@ -26,9 +25,7 @@ class _StudentRegisterScreenState extends State<StudentRegisterScreen> {
     final password = _passwordController.text;
     final confirmPassword = _confirmPasswordController.text;
 
-    if (studentId.isEmpty ||
-        password.isEmpty ||
-        confirmPassword.isEmpty) {
+    if (studentId.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
       _showMessage('Please fill in all required fields.');
       return;
     }
@@ -53,11 +50,8 @@ class _StudentRegisterScreenState extends State<StudentRegisterScreen> {
       final email = '$studentId@demo.cuet-dsw.local';
 
       // Create Firebase Authentication account first.
-      final credential =
-          await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
+      final credential = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(email: email, password: password);
 
       createdUser = credential.user;
 
@@ -85,9 +79,7 @@ class _StudentRegisterScreenState extends State<StudentRegisterScreen> {
       if (studentData['active'] == false) {
         await createdUser.delete();
 
-        _showMessage(
-          'This student is not currently active.',
-        );
+        _showMessage('This student is not currently active.');
         return;
       }
 
@@ -96,18 +88,18 @@ class _StudentRegisterScreenState extends State<StudentRegisterScreen> {
           .collection('users')
           .doc(createdUser.uid)
           .set({
-        'uid': createdUser.uid,
-        'studentId': studentId,
-        'name': studentData['name'] ?? '',
-        'email': email,
-        'role': 'student',
-        'department': studentData['department'] ?? '',
-        'batch': studentData['batch'] ?? '',
-        'hall': studentData['hall'] ?? '',
-        'phone': phone,
-        'profileImageUrl': '',
-        'createdAt': FieldValue.serverTimestamp(),
-      });
+            'uid': createdUser.uid,
+            'studentId': studentId,
+            'name': studentData['name'] ?? '',
+            'email': email,
+            'role': 'student',
+            'department': studentData['department'] ?? '',
+            'batch': studentData['batch'] ?? '',
+            'hall': studentData['hall'] ?? '',
+            'phone': phone,
+            'profileImageUrl': '',
+            'createdAt': FieldValue.serverTimestamp(),
+          });
 
       await FirebaseAuth.instance.signOut();
 
@@ -115,28 +107,20 @@ class _StudentRegisterScreenState extends State<StudentRegisterScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(
-            'Student account created successfully. Please login.',
-          ),
+          content: Text('Student account created successfully. Please login.'),
         ),
       );
 
       Navigator.pop(context);
     } on FirebaseAuthException catch (e) {
       if (e.code == 'email-already-in-use') {
-        _showMessage(
-          'An account already exists for this Student ID.',
-        );
+        _showMessage('An account already exists for this Student ID.');
       } else if (e.code == 'weak-password') {
         _showMessage('Please use a stronger password.');
       } else if (e.code == 'network-request-failed') {
-        _showMessage(
-          'Network error. Please check your internet connection.',
-        );
+        _showMessage('Network error. Please check your internet connection.');
       } else {
-        _showMessage(
-          e.message ?? 'Registration failed.',
-        );
+        _showMessage(e.message ?? 'Registration failed.');
       }
     } on FirebaseException catch (e) {
       // If Auth account was created but Firestore failed,
@@ -152,9 +136,7 @@ class _StudentRegisterScreenState extends State<StudentRegisterScreen> {
           'Registration permission denied. Please contact the administrator.',
         );
       } else {
-        _showMessage(
-          'Database error: ${e.message ?? e.code}',
-        );
+        _showMessage('Database error: ${e.message ?? e.code}');
       }
     } catch (e) {
       if (createdUser != null) {
@@ -163,9 +145,7 @@ class _StudentRegisterScreenState extends State<StudentRegisterScreen> {
         } catch (_) {}
       }
 
-      _showMessage(
-        'Registration failed. Please try again.',
-      );
+      _showMessage('Registration failed. Please try again.');
     } finally {
       if (mounted) {
         setState(() {
@@ -178,11 +158,9 @@ class _StudentRegisterScreenState extends State<StudentRegisterScreen> {
   void _showMessage(String message) {
     if (!mounted) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-      ),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -197,9 +175,7 @@ class _StudentRegisterScreenState extends State<StudentRegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Student Registration'),
-      ),
+      appBar: AppBar(title: const Text('Student Registration')),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
@@ -208,10 +184,7 @@ class _StudentRegisterScreenState extends State<StudentRegisterScreen> {
             children: [
               const Text(
                 'CUET Student Registration',
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
               ),
 
               const SizedBox(height: 8),
@@ -229,9 +202,7 @@ class _StudentRegisterScreenState extends State<StudentRegisterScreen> {
                   labelText: 'Student ID',
                   hintText: 'e.g. 2104001',
                   border: OutlineInputBorder(),
-                  prefixIcon: Icon(
-                    Icons.badge_outlined,
-                  ),
+                  prefixIcon: Icon(Icons.badge_outlined),
                 ),
               ),
 
@@ -244,9 +215,7 @@ class _StudentRegisterScreenState extends State<StudentRegisterScreen> {
                   labelText: 'Mobile Number (Optional)',
                   hintText: '01XXXXXXXXX',
                   border: OutlineInputBorder(),
-                  prefixIcon: Icon(
-                    Icons.phone_outlined,
-                  ),
+                  prefixIcon: Icon(Icons.phone_outlined),
                 ),
               ),
 
@@ -258,9 +227,7 @@ class _StudentRegisterScreenState extends State<StudentRegisterScreen> {
                 decoration: InputDecoration(
                   labelText: 'Password',
                   border: const OutlineInputBorder(),
-                  prefixIcon: const Icon(
-                    Icons.lock_outline,
-                  ),
+                  prefixIcon: const Icon(Icons.lock_outline),
                   suffixIcon: IconButton(
                     onPressed: () {
                       setState(() {
@@ -268,9 +235,7 @@ class _StudentRegisterScreenState extends State<StudentRegisterScreen> {
                       });
                     },
                     icon: Icon(
-                      _hidePassword
-                          ? Icons.visibility_off
-                          : Icons.visibility,
+                      _hidePassword ? Icons.visibility_off : Icons.visibility,
                     ),
                   ),
                 ),
@@ -284,14 +249,11 @@ class _StudentRegisterScreenState extends State<StudentRegisterScreen> {
                 decoration: InputDecoration(
                   labelText: 'Confirm Password',
                   border: const OutlineInputBorder(),
-                  prefixIcon: const Icon(
-                    Icons.lock_outline,
-                  ),
+                  prefixIcon: const Icon(Icons.lock_outline),
                   suffixIcon: IconButton(
                     onPressed: () {
                       setState(() {
-                        _hideConfirmPassword =
-                            !_hideConfirmPassword;
+                        _hideConfirmPassword = !_hideConfirmPassword;
                       });
                     },
                     icon: Icon(
@@ -311,13 +273,9 @@ class _StudentRegisterScreenState extends State<StudentRegisterScreen> {
                     ? const SizedBox(
                         width: 20,
                         height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                        ),
+                        child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : const Text(
-                        'Create Student Account',
-                      ),
+                    : const Text('Create Student Account'),
               ),
             ],
           ),

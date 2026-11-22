@@ -103,9 +103,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (_selectedRole == 'student') {
       if (!StudentAuthMapper.isValidStudentId(identifier)) {
-        _showMessage(
-          'Please enter a valid Student ID (for example 2104001).',
-        );
+        _showMessage('Please enter a valid Student ID (for example 2104001).');
         return;
       }
     } else if (!StudentAuthMapper.isEmailLike(identifier)) {
@@ -179,11 +177,9 @@ class _LoginScreenState extends State<LoginScreen> {
   void _showMessage(String message) {
     if (!mounted) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-      ),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   void _onRoleChanged(String? value) {
@@ -201,9 +197,7 @@ class _LoginScreenState extends State<LoginScreen> {
   void _openStudentRegistration() {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) => const StudentRegisterScreen(),
-      ),
+      MaterialPageRoute(builder: (_) => const StudentRegisterScreen()),
     );
   }
 
@@ -215,9 +209,7 @@ class _LoginScreenState extends State<LoginScreen> {
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(24),
             child: ConstrainedBox(
-              constraints: const BoxConstraints(
-                maxWidth: 430,
-              ),
+              constraints: const BoxConstraints(maxWidth: 430),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -246,10 +238,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   const SizedBox(height: 8),
 
-                  Text(
-                    _subtitle,
-                    style: Theme.of(context).textTheme.bodyLarge,
-                  ),
+                  Text(_subtitle, style: Theme.of(context).textTheme.bodyLarge),
 
                   const SizedBox(height: 20),
 
@@ -268,13 +257,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         label: Text('DSW Director'),
                       ),
                     ],
-                    selected: {
-                      _selectedRole,
-                    },
+                    selected: {_selectedRole},
                     onSelectionChanged: (selection) {
-                      _onRoleChanged(
-                        selection.first,
-                      );
+                      _onRoleChanged(selection.first);
                     },
                     showSelectedIcon: false,
                   ),
@@ -302,9 +287,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     obscureText: _obscurePassword,
                     decoration: InputDecoration(
                       labelText: 'Password',
-                      prefixIcon: const Icon(
-                        Icons.lock_outline_rounded,
-                      ),
+                      prefixIcon: const Icon(Icons.lock_outline_rounded),
                       suffixIcon: IconButton(
                         onPressed: () {
                           setState(() {
@@ -339,9 +322,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                       TextButton(
                         onPressed: () {},
-                        child: const Text(
-                          'Forgot Password?',
-                        ),
+                        child: const Text('Forgot Password?'),
                       ),
                     ],
                   ),
@@ -362,9 +343,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ? const SizedBox(
                               height: 18,
                               width: 18,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                              ),
+                              child: CircularProgressIndicator(strokeWidth: 2),
                             )
                           : const Text(
                               'Login',
@@ -383,12 +362,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       width: double.infinity,
                       child: TextButton.icon(
                         onPressed: _openStudentRegistration,
-                        icon: const Icon(
-                          Icons.person_add_alt_1_rounded,
-                        ),
-                        label: const Text(
-                          'Create Student Account',
-                        ),
+                        icon: const Icon(Icons.person_add_alt_1_rounded),
+                        label: const Text('Create Student Account'),
                       ),
                     ),
                   ],

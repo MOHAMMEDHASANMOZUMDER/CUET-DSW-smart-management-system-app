@@ -86,10 +86,14 @@ Give a concise, helpful answer to: $question''',
     if (q.contains('hall')) {
       return 'For a hall-related issue, open DSW Service Center, choose “Hall-related request”, enter a clear title and detailed description, attach supporting evidence if available, and submit. You can then follow the status from Track Service Requests.';
     }
-    if (q.contains('financial') || q.contains('assistance') || q.contains('money')) {
+    if (q.contains('financial') ||
+        q.contains('assistance') ||
+        q.contains('money')) {
       return 'Choose “Financial assistance request” in DSW Service Center. Explain the situation clearly and attach any supporting documents you are comfortable providing. Eligibility and final decisions must be confirmed by the DSW office.';
     }
-    if (q.contains('complaint') || q.contains('welfare') || q.contains('grievance')) {
+    if (q.contains('complaint') ||
+        q.contains('welfare') ||
+        q.contains('grievance')) {
       return 'For a student welfare complaint or general grievance, submit a DSW Service Request with a factual description of what happened, where relevant, and any supporting evidence. The official workflow is Submitted → Under Review → Assigned → Resolved.';
     }
     if (q.contains('event') || q.contains('permission')) {
@@ -101,7 +105,10 @@ Give a concise, helpful answer to: $question''',
     if (q.contains('track') || q.contains('status') || q.contains('history')) {
       return 'Open Track Service Requests to see your request status, assigned officer, documents, resolution note, and application history. Status moves through Submitted → Under Review → Assigned → Resolved.';
     }
-    if (q.contains('upload') || q.contains('document') || q.contains('pdf') || q.contains('image')) {
+    if (q.contains('upload') ||
+        q.contains('document') ||
+        q.contains('pdf') ||
+        q.contains('image')) {
       return 'The service request form accepts PDF, JPG, and PNG files up to 5 MB per file. Images may also be used for advisory evidence analysis when the AI service is available.';
     }
     if (q.contains('workflow') || q.contains('process')) {
@@ -113,85 +120,82 @@ Give a concise, helpful answer to: $question''',
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(title: const Text('AI DSW Helpdesk')),
-        body: Column(
-          children: [
-            Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: _messages.length,
-                itemBuilder: (context, index) {
-                  final message = _messages[index];
-                  return Align(
-                    alignment: message.user
-                        ? Alignment.centerRight
-                        : Alignment.centerLeft,
-                    child: Container(
-                      constraints: const BoxConstraints(maxWidth: 360),
-                      margin: const EdgeInsets.only(bottom: 10),
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: message.user
-                            ? Theme.of(context).colorScheme.primaryContainer
-                            : Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: Theme.of(context).dividerColor,
+    appBar: AppBar(title: const Text('AI DSW Helpdesk')),
+    body: Column(
+      children: [
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: _messages.length,
+            itemBuilder: (context, index) {
+              final message = _messages[index];
+              return Align(
+                alignment: message.user
+                    ? Alignment.centerRight
+                    : Alignment.centerLeft,
+                child: Container(
+                  constraints: const BoxConstraints(maxWidth: 360),
+                  margin: const EdgeInsets.only(bottom: 10),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: message.user
+                        ? Theme.of(context).colorScheme.primaryContainer
+                        : Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Theme.of(context).dividerColor),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(message.text),
+                      if (!message.user && message.fallback) ...[
+                        const SizedBox(height: 8),
+                        Text(
+                          'Offline guidance · online AI is currently unavailable',
+                          style: Theme.of(context).textTheme.labelSmall
+                              ?.copyWith(fontStyle: FontStyle.italic),
                         ),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(message.text),
-                          if (!message.user && message.fallback) ...[
-                            const SizedBox(height: 8),
-                            Text(
-                              'Offline guidance · online AI is currently unavailable',
-                              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                    fontStyle: FontStyle.italic,
-                                  ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-            SafeArea(
-              top: false,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: _controller,
-                        minLines: 1,
-                        maxLines: 4,
-                        onSubmitted: (_) => _send(),
-                        decoration: const InputDecoration(
-                          hintText: 'Ask about a DSW service...',
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    IconButton.filled(
-                      onPressed: _loading ? null : _send,
-                      icon: _loading
-                          ? const SizedBox(
-                              width: 18,
-                              height: 18,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Icon(Icons.send),
-                    ),
-                  ],
+                      ],
+                    ],
+                  ),
                 ),
-              ),
-            ),
-          ],
+              );
+            },
+          ),
         ),
-      );
+        SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _controller,
+                    minLines: 1,
+                    maxLines: 4,
+                    onSubmitted: (_) => _send(),
+                    decoration: const InputDecoration(
+                      hintText: 'Ask about a DSW service...',
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                IconButton.filled(
+                  onPressed: _loading ? null : _send,
+                  icon: _loading
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.send),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
 }

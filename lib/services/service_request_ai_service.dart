@@ -16,7 +16,9 @@ class ServiceRequestAiService {
     try {
       final model = FirebaseAI.googleAI().generativeModel(
         model: 'gemini-2.5-flash',
-        generationConfig: GenerationConfig(responseMimeType: 'application/json'),
+        generationConfig: GenerationConfig(
+          responseMimeType: 'application/json',
+        ),
       );
       final response = await model.generateContent([
         Content.text(
@@ -39,10 +41,10 @@ Description: $description''',
         'suggestedOffice': _text(decoded['suggestedOffice']),
         'riskTags': decoded['riskTags'] is List
             ? (decoded['riskTags'] as List)
-                .map((e) => e.toString().trim())
-                .where((e) => e.isNotEmpty)
-                .take(6)
-                .toList()
+                  .map((e) => e.toString().trim())
+                  .where((e) => e.isNotEmpty)
+                  .take(6)
+                  .toList()
             : <String>[],
       };
     } catch (_) {
@@ -95,7 +97,9 @@ Description: $description''',
     try {
       final model = FirebaseAI.googleAI().generativeModel(
         model: 'gemini-2.5-flash',
-        generationConfig: GenerationConfig(responseMimeType: 'application/json'),
+        generationConfig: GenerationConfig(
+          responseMimeType: 'application/json',
+        ),
       );
       final response = await model.generateContent([
         Content.text(
@@ -120,7 +124,6 @@ CANDIDATE: $candidateText''',
       return null;
     }
   }
-
 
   Map<String, dynamic> _fallbackRequestAnalysis({
     required String requestType,
@@ -158,7 +161,13 @@ CANDIDATE: $candidateText''',
     ])) {
       priority = 'HIGH';
       tags.add('time-sensitive');
-    } else if (hasAny(['delay', 'repeated', 'broken', 'not working', 'without water'])) {
+    } else if (hasAny([
+      'delay',
+      'repeated',
+      'broken',
+      'not working',
+      'without water',
+    ])) {
       priority = 'NORMAL';
       tags.add('service-impact');
     }

@@ -66,10 +66,8 @@ class AnalyticsService {
       requestsByStatus[request.status] =
           (requestsByStatus[request.status] ?? 0) + 1;
       if (request.resolvedAt != null) {
-        totalResolutionHours += request.resolvedAt!
-                .difference(request.createdAt)
-                .inMinutes /
-            60.0;
+        totalResolutionHours +=
+            request.resolvedAt!.difference(request.createdAt).inMinutes / 60.0;
         resolutionCount++;
       }
     }
@@ -82,22 +80,26 @@ class AnalyticsService {
       totalRequests: requests.length,
       openRequests: requests.where((e) => e.status != 'RESOLVED').length,
       resolvedRequests: requests.where((e) => e.status == 'RESOLVED').length,
-      urgentRequests:
-          requests
-              .where((e) =>
-                  ['HIGH', 'URGENT'].contains(e.priority) ||
-                  ['HIGH', 'URGENT'].contains(e.aiSuggestedPriority))
-              .length,
+      urgentRequests: requests
+          .where(
+            (e) =>
+                ['HIGH', 'URGENT'].contains(e.priority) ||
+                ['HIGH', 'URGENT'].contains(e.aiSuggestedPriority),
+          )
+          .length,
       totalComplaints: complaints.length,
-      unresolvedComplaints:
-          complaints.where((e) => e.status != 'RESOLVED').length,
-      duplicateFlags: requests.where((e) => e.aiDuplicateScore >= 0.65).length +
+      unresolvedComplaints: complaints
+          .where((e) => e.status != 'RESOLVED')
+          .length,
+      duplicateFlags:
+          requests.where((e) => e.aiDuplicateScore >= 0.65).length +
           complaints.where((e) => e.aiDuplicateScore >= 0.65).length,
       requestsByType: requestsByType,
       requestsByStatus: requestsByStatus,
       complaintsByCategory: complaintsByCategory,
-      averageResolutionHours:
-          resolutionCount == 0 ? 0 : totalResolutionHours / resolutionCount,
+      averageResolutionHours: resolutionCount == 0
+          ? 0
+          : totalResolutionHours / resolutionCount,
       aiInsights: const [],
     );
 
@@ -122,7 +124,9 @@ class AnalyticsService {
     try {
       final model = FirebaseAI.googleAI().generativeModel(
         model: 'gemini-2.5-flash',
-        generationConfig: GenerationConfig(responseMimeType: 'application/json'),
+        generationConfig: GenerationConfig(
+          responseMimeType: 'application/json',
+        ),
       );
       final payload = jsonEncode({
         'totalRequests': data.totalRequests,

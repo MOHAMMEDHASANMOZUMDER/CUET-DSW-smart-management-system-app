@@ -19,7 +19,9 @@ class ApplicationHistoryService {
     final snapshot = await _history
         .where('applicationId', isEqualTo: applicationId)
         .get();
-    final history = snapshot.docs.map(ApplicationHistory.fromFirestore).toList();
+    final history = snapshot.docs
+        .map(ApplicationHistory.fromFirestore)
+        .toList();
     history.sort((a, b) => b.timestamp.compareTo(a.timestamp));
     return history;
   }
@@ -34,12 +36,15 @@ class ApplicationHistoryService {
   Stream<List<ApplicationHistory>> streamHistoryForApplication(
     String applicationId,
   ) {
-    return _history.where('applicationId', isEqualTo: applicationId).snapshots().map(
-      (snapshot) {
-        final history = snapshot.docs.map(ApplicationHistory.fromFirestore).toList();
-        history.sort((a, b) => b.timestamp.compareTo(a.timestamp));
-        return history;
-      },
-    );
+    return _history
+        .where('applicationId', isEqualTo: applicationId)
+        .snapshots()
+        .map((snapshot) {
+          final history = snapshot.docs
+              .map(ApplicationHistory.fromFirestore)
+              .toList();
+          history.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+          return history;
+        });
   }
 }

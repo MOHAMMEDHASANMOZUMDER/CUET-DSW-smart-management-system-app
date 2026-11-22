@@ -33,15 +33,16 @@ class ComplaintServiceData {
     return snapshot.exists ? Complaint.fromFirestore(snapshot) : null;
   }
 
-  Stream<Complaint?> streamComplaintById(String id) =>
-      _complaints.doc(id).snapshots().map(
-            (doc) => doc.exists ? Complaint.fromFirestore(doc) : null,
-          );
+  Stream<Complaint?> streamComplaintById(String id) => _complaints
+      .doc(id)
+      .snapshots()
+      .map((doc) => doc.exists ? Complaint.fromFirestore(doc) : null);
 
   Future<List<Complaint>> getAllComplaints() async {
     await _requireStaff();
-    final snapshot =
-        await _complaints.orderBy('createdAt', descending: true).get();
+    final snapshot = await _complaints
+        .orderBy('createdAt', descending: true)
+        .get();
     return snapshot.docs.map(Complaint.fromFirestore).toList();
   }
 
@@ -55,16 +56,18 @@ class ComplaintServiceData {
   }
 
   Future<List<Complaint>> getComplaintsByStudentId(String studentId) async {
-    final snapshot =
-        await _complaints.where('studentId', isEqualTo: studentId).get();
+    final snapshot = await _complaints
+        .where('studentId', isEqualTo: studentId)
+        .get();
     final complaints = snapshot.docs.map(Complaint.fromFirestore).toList();
     complaints.sort((a, b) => b.createdAt.compareTo(a.createdAt));
     return complaints;
   }
 
   Future<List<Complaint>> getComplaintsByStudentUid(String studentUid) async {
-    final snapshot =
-        await _complaints.where('studentUid', isEqualTo: studentUid).get();
+    final snapshot = await _complaints
+        .where('studentUid', isEqualTo: studentUid)
+        .get();
     final complaints = snapshot.docs.map(Complaint.fromFirestore).toList();
     complaints.sort((a, b) => b.createdAt.compareTo(a.createdAt));
     return complaints;
@@ -183,9 +186,7 @@ Description: $description''',
     );
     final duplicate = await _detectDuplicate(id, complaint);
     final imageAssessment = await _imageAssessment(complaint);
-    final fields = <String, dynamic>{
-      'updatedAt': FieldValue.serverTimestamp(),
-    };
+    final fields = <String, dynamic>{'updatedAt': FieldValue.serverTimestamp()};
     if (result != null) {
       fields.addAll({
         'aiSuggestedCategory': result['category'],
@@ -303,11 +304,7 @@ Description: $description''',
       'correctionNote': note.trim(),
       'updatedAt': FieldValue.serverTimestamp(),
     });
-    await _safeHistory(
-      id,
-      status: 'CORRECTION_REQUIRED',
-      note: note.trim(),
-    );
+    await _safeHistory(id, status: 'CORRECTION_REQUIRED', note: note.trim());
     await _safeNotifyStudent(
       complaint,
       'A DSW Officer requested more information. Please correct and resubmit your complaint.',
@@ -371,9 +368,7 @@ Description: $description''',
         'Complaint details can only be reviewed before sending it to the Director.',
       );
     }
-    final fields = <String, dynamic>{
-      'updatedAt': FieldValue.serverTimestamp(),
-    };
+    final fields = <String, dynamic>{'updatedAt': FieldValue.serverTimestamp()};
     if (category != null) fields['category'] = category;
     if (priority != null) fields['priority'] = priority;
     if (officerResponse != null) fields['officerResponse'] = officerResponse;
@@ -423,13 +418,13 @@ Description: $description''',
   }
 
   Stream<List<Complaint>> streamComplaintsForStudent(String studentUid) =>
-      _complaints.where('studentUid', isEqualTo: studentUid).snapshots().map(
-        (snapshot) {
-          final items = snapshot.docs.map(Complaint.fromFirestore).toList();
-          items.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-          return items;
-        },
-      );
+      _complaints.where('studentUid', isEqualTo: studentUid).snapshots().map((
+        snapshot,
+      ) {
+        final items = snapshot.docs.map(Complaint.fromFirestore).toList();
+        items.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+        return items;
+      });
 
   Stream<List<Complaint>> streamAllComplaints() => _complaints
       .orderBy('createdAt', descending: true)

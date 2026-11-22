@@ -58,7 +58,10 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 14,
+          vertical: 14,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
           borderSide: const BorderSide(color: _border),
@@ -81,7 +84,9 @@ class AppTheme {
         style: FilledButton.styleFrom(
           backgroundColor: _navy,
           foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
           minimumSize: const Size(0, 46),
         ),
       ),
@@ -89,7 +94,9 @@ class AppTheme {
         style: OutlinedButton.styleFrom(
           foregroundColor: _navy,
           side: const BorderSide(color: _border),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
           minimumSize: const Size(0, 46),
         ),
       ),

@@ -61,9 +61,9 @@ class _ServiceRequestSubmissionScreenState
       if (mounted) setState(() => _documents.addAll(files));
     } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Upload failed: $error')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Upload failed: $error')));
       }
     } finally {
       if (mounted) setState(() => _uploading = false);
@@ -123,175 +123,165 @@ class _ServiceRequestSubmissionScreenState
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(title: const Text('New DSW Service Request')),
-        body: FutureBuilder<StudentUser?>(
-          future: _profileFuture,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            final profile = snapshot.data;
-            if (profile == null) {
-              return const Center(child: Text('Student profile not found.'));
-            }
-            return ListView(
-              padding: const EdgeInsets.all(20),
-              children: [
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Official DSW workflow',
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                        const SizedBox(height: 8),
-                        const Text(
-                          'Submitted → Officer Review → Resubmission if needed → '
-                          'Officer Review Complete → Director Final Decision',
-                        ),
-                        const SizedBox(height: 8),
-                        const Text(
-                          'All DSW Officers can review requests. Only the DSW Director can approve, reject, resolve, or make a final decision.',
-                        ),
-                      ],
+    appBar: AppBar(title: const Text('New DSW Service Request')),
+    body: FutureBuilder<StudentUser?>(
+      future: _profileFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        final profile = snapshot.data;
+        if (profile == null) {
+          return const Center(child: Text('Student profile not found.'));
+        }
+        return ListView(
+          padding: const EdgeInsets.all(20),
+          children: [
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Official DSW workflow',
+                      style: Theme.of(context).textTheme.titleMedium,
                     ),
-                  ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Submitted → Officer Review → Resubmission if needed → '
+                      'Officer Review Complete → Director Final Decision',
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'All DSW Officers can review requests. Only the DSW Director can approve, reject, resolve, or make a final decision.',
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 16),
-                Form(
-                  key: _formKey,
-                  child: Column(
-                    children: [
-                      DropdownButtonFormField<String>(
-                        initialValue: _type,
-                        isExpanded: true,
-                        decoration: const InputDecoration(
-                          labelText: 'Request type',
-                          prefixIcon: Icon(Icons.business_center_outlined),
-                        ),
-                        items: ServiceRequest.requestTypes.entries
-                            .map(
-                              (entry) => DropdownMenuItem(
-                                value: entry.key,
-                                child: Text(
-                                  entry.value,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            )
-                            .toList(),
-                        onChanged: (value) {
-                          if (value != null) setState(() => _type = value);
-                        },
-                      ),
-                      const SizedBox(height: 14),
-                      CustomTextField(
-                        controller: _title,
-                        labelText: 'Request title',
-                        prefixIcon: Icons.title,
-                        validator: (value) =>
-                            value == null || value.trim().isEmpty
-                                ? 'Enter a clear request title'
-                                : null,
-                      ),
-                      const SizedBox(height: 14),
-                      CustomTextField(
-                        controller: _description,
-                        labelText: 'Detailed description',
-                        prefixIcon: Icons.notes_outlined,
-                        maxLines: 7,
-                        validator: (value) {
-                          final text = value?.trim() ?? '';
-                          if (text.length < 20) {
-                            return 'Please provide at least 20 characters of detail';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 14),
-                      Card(
-                        child: Padding(
-                          padding: const EdgeInsets.all(14),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Form(
+              key: _formKey,
+              child: Column(
+                children: [
+                  DropdownButtonFormField<String>(
+                    initialValue: _type,
+                    isExpanded: true,
+                    decoration: const InputDecoration(
+                      labelText: 'Request type',
+                      prefixIcon: Icon(Icons.business_center_outlined),
+                    ),
+                    items: ServiceRequest.requestTypes.entries
+                        .map(
+                          (entry) => DropdownMenuItem(
+                            value: entry.key,
+                            child: Text(
+                              entry.value,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (value) {
+                      if (value != null) setState(() => _type = value);
+                    },
+                  ),
+                  const SizedBox(height: 14),
+                  CustomTextField(
+                    controller: _title,
+                    labelText: 'Request title',
+                    prefixIcon: Icons.title,
+                    validator: (value) => value == null || value.trim().isEmpty
+                        ? 'Enter a clear request title'
+                        : null,
+                  ),
+                  const SizedBox(height: 14),
+                  CustomTextField(
+                    controller: _description,
+                    labelText: 'Detailed description',
+                    prefixIcon: Icons.notes_outlined,
+                    maxLines: 7,
+                    validator: (value) {
+                      final text = value?.trim() ?? '';
+                      if (text.length < 20) {
+                        return 'Please provide at least 20 characters of detail';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 14),
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(14),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
                             children: [
-                              Row(
-                                children: [
-                                  const Expanded(
-                                    child: Text(
-                                      'Supporting documents',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
-                                  ),
-                                  OutlinedButton.icon(
-                                    onPressed:
-                                        _uploading ? null : _pickDocuments,
-                                    icon: _uploading
-                                        ? const SizedBox(
-                                            width: 18,
-                                            height: 18,
-                                            child: CircularProgressIndicator(
-                                              strokeWidth: 2,
-                                            ),
-                                          )
-                                        : const Icon(
-                                            Icons.upload_file_outlined,
-                                          ),
-                                    label: Text(
-                                      _uploading
-                                          ? '${(_uploadProgress * 100).round()}%'
-                                          : 'Upload',
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 6),
-                              const Text(
-                                'PDF, JPG or PNG, maximum 5 MB per file. Images can be used for advisory AI evidence analysis.',
-                              ),
-                              if (_documents.isNotEmpty) ...[
-                                const SizedBox(height: 8),
-                                ..._documents.map(
-                                  (file) => ListTile(
-                                    dense: true,
-                                    contentPadding: EdgeInsets.zero,
-                                    leading: const Icon(Icons.attach_file),
-                                    title: Text(
-                                      (file['fileName'] ??
-                                              file['name'] ??
-                                              'File')
-                                          .toString(),
-                                    ),
-                                  ),
+                              const Expanded(
+                                child: Text(
+                                  'Supporting documents',
+                                  style: TextStyle(fontWeight: FontWeight.w700),
                                 ),
-                              ],
+                              ),
+                              OutlinedButton.icon(
+                                onPressed: _uploading ? null : _pickDocuments,
+                                icon: _uploading
+                                    ? const SizedBox(
+                                        width: 18,
+                                        height: 18,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                        ),
+                                      )
+                                    : const Icon(Icons.upload_file_outlined),
+                                label: Text(
+                                  _uploading
+                                      ? '${(_uploadProgress * 100).round()}%'
+                                      : 'Upload',
+                                ),
+                              ),
                             ],
                           ),
-                        ),
-                      ),
-                      const SizedBox(height: 18),
-                      SizedBox(
-                        width: double.infinity,
-                        child: FilledButton.icon(
-                          onPressed: _saving ? null : () => _submit(profile),
-                          icon: const Icon(Icons.send_outlined),
-                          label: Text(
-                            _saving ? 'Submitting...' : 'Submit request',
+                          const SizedBox(height: 6),
+                          const Text(
+                            'PDF, JPG or PNG, maximum 5 MB per file. Images can be used for advisory AI evidence analysis.',
                           ),
-                        ),
+                          if (_documents.isNotEmpty) ...[
+                            const SizedBox(height: 8),
+                            ..._documents.map(
+                              (file) => ListTile(
+                                dense: true,
+                                contentPadding: EdgeInsets.zero,
+                                leading: const Icon(Icons.attach_file),
+                                title: Text(
+                                  (file['fileName'] ?? file['name'] ?? 'File')
+                                      .toString(),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
-                    ],
+                    ),
                   ),
-                ),
-              ],
-            );
-          },
-        ),
-      );
+                  const SizedBox(height: 18),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.icon(
+                      onPressed: _saving ? null : () => _submit(profile),
+                      icon: const Icon(Icons.send_outlined),
+                      label: Text(_saving ? 'Submitting...' : 'Submit request'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
+    ),
+  );
 }

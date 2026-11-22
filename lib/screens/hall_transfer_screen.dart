@@ -200,7 +200,9 @@ class _HallTransferScreenState extends State<HallTransferScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('File upload is disabled for this build configuration.'),
+            content: Text(
+              'File upload is disabled for this build configuration.',
+            ),
           ),
         );
       }

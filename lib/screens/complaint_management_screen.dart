@@ -21,116 +21,114 @@ class _ComplaintManagementScreenState extends State<ComplaintManagementScreen> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(
-          title: Text(
-            widget.director ? 'Complaint oversight' : 'DSW Officer Complaints',
-          ),
-        ),
-        body: StreamBuilder<List<Complaint>>(
-          stream: ComplaintServiceData.instance.streamAllComplaints(),
-          builder: (context, snapshot) {
-            if (snapshot.hasError) {
-              return Center(
-                child: Text('Could not load complaints: ${snapshot.error}'),
-              );
-            }
-            if (!snapshot.hasData) {
-              return const Center(child: CircularProgressIndicator());
-            }
+    appBar: AppBar(
+      title: Text(
+        widget.director ? 'Complaint oversight' : 'DSW Officer Complaints',
+      ),
+    ),
+    body: StreamBuilder<List<Complaint>>(
+      stream: ComplaintServiceData.instance.streamAllComplaints(),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return Center(
+            child: Text('Could not load complaints: ${snapshot.error}'),
+          );
+        }
+        if (!snapshot.hasData) {
+          return const Center(child: CircularProgressIndicator());
+        }
 
-            final complaints = snapshot.data!;
-            final visible = complaints.where(_matches).toList();
-            return ListView(
-              padding: const EdgeInsets.all(16),
-              children: [
-                _Statistics(complaints: complaints),
-                const SizedBox(height: 16),
-                TextField(
-                  onChanged: (value) =>
-                      setState(() => _query = value.toLowerCase()),
-                  decoration: const InputDecoration(
-                    prefixIcon: Icon(Icons.search),
-                    labelText: 'Search complaints',
+        final complaints = snapshot.data!;
+        final visible = complaints.where(_matches).toList();
+        return ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            _Statistics(complaints: complaints),
+            const SizedBox(height: 16),
+            TextField(
+              onChanged: (value) =>
+                  setState(() => _query = value.toLowerCase()),
+              decoration: const InputDecoration(
+                prefixIcon: Icon(Icons.search),
+                labelText: 'Search complaints',
+              ),
+            ),
+            const SizedBox(height: 12),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final filters = [
+                  _filter(
+                    'Category',
+                    _category,
+                    ['All', ...Complaint.categories],
+                    (value) => setState(() => _category = value),
                   ),
-                ),
-                const SizedBox(height: 12),
-                LayoutBuilder(
-                  builder: (context, constraints) {
-                    final filters = [
-                      _filter(
-                        'Category',
-                        _category,
-                        ['All', ...Complaint.categories],
-                        (value) => setState(() => _category = value),
-                      ),
-                      _filter(
-                        'Status',
-                        _status,
-                        ['All', ...ComplaintServiceData.statuses],
-                        (value) => setState(() => _status = value),
-                      ),
-                      _filter(
-                        'Priority',
-                        _priority,
-                        const ['All', 'LOW', 'NORMAL', 'HIGH', 'URGENT'],
-                        (value) => setState(() => _priority = value),
-                      ),
-                    ];
-                    if (constraints.maxWidth < 720) {
-                      return Column(
-                        children: [
-                          filters[0],
-                          const SizedBox(height: 8),
-                          filters[1],
-                          const SizedBox(height: 8),
-                          filters[2],
-                        ],
-                      );
-                    }
-                    return Row(
-                      children: [
-                        Expanded(child: filters[0]),
-                        const SizedBox(width: 8),
-                        Expanded(child: filters[1]),
-                        const SizedBox(width: 8),
-                        Expanded(child: filters[2]),
-                      ],
-                    );
-                  },
-                ),
-                const SizedBox(height: 12),
-                if (visible.isEmpty)
-                  const Padding(
-                    padding: EdgeInsets.all(32),
-                    child: Center(
-                      child: Text('No complaints match these filters.'),
-                    ),
+                  _filter('Status', _status, [
+                    'All',
+                    ...ComplaintServiceData.statuses,
+                  ], (value) => setState(() => _status = value)),
+                  _filter(
+                    'Priority',
+                    _priority,
+                    const ['All', 'LOW', 'NORMAL', 'HIGH', 'URGENT'],
+                    (value) => setState(() => _priority = value),
                   ),
-                ...visible.map(
-                  (complaint) => Card(
-                    child: ListTile(
-                      title: Text(complaint.title),
-                      subtitle: Text(
-                        '${complaint.trackingNumber}  |  ${complaint.category}  |  ${complaint.priority}',
-                      ),
-                      trailing: StatusChip(label: complaint.status),
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => _StaffComplaintDetails(
-                            complaint: complaint,
-                            director: widget.director,
-                          ),
-                        ),
+                ];
+                if (constraints.maxWidth < 720) {
+                  return Column(
+                    children: [
+                      filters[0],
+                      const SizedBox(height: 8),
+                      filters[1],
+                      const SizedBox(height: 8),
+                      filters[2],
+                    ],
+                  );
+                }
+                return Row(
+                  children: [
+                    Expanded(child: filters[0]),
+                    const SizedBox(width: 8),
+                    Expanded(child: filters[1]),
+                    const SizedBox(width: 8),
+                    Expanded(child: filters[2]),
+                  ],
+                );
+              },
+            ),
+            const SizedBox(height: 12),
+            if (visible.isEmpty)
+              const Padding(
+                padding: EdgeInsets.all(32),
+                child: Center(
+                  child: Text('No complaints match these filters.'),
+                ),
+              ),
+            ...visible.map(
+              (complaint) => Card(
+                child: ListTile(
+                  title: Text(complaint.title),
+                  subtitle: Text(
+                    '${complaint.trackingNumber}  |  ${complaint.category}  |  ${complaint.priority}',
+                  ),
+                  trailing: StatusChip(label: complaint.status),
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => _StaffComplaintDetails(
+                        complaint: complaint,
+                        director: widget.director,
                       ),
                     ),
                   ),
                 ),
-              ],
-            );
-          },
-        ),
-      );
+              ),
+            ),
+          ],
+        );
+      },
+    ),
+  );
 
   bool _matches(Complaint complaint) {
     final text =
@@ -147,23 +145,22 @@ class _ComplaintManagementScreenState extends State<ComplaintManagementScreen> {
     String value,
     List<String> values,
     ValueChanged<String> onChanged,
-  ) =>
-      DropdownButtonFormField<String>(
-        initialValue: value,
-        isExpanded: true,
-        decoration: InputDecoration(labelText: label),
-        items: values
-            .map(
-              (item) => DropdownMenuItem(
-                value: item,
-                child: Text(item, overflow: TextOverflow.ellipsis),
-              ),
-            )
-            .toList(),
-        onChanged: (next) {
-          if (next != null) onChanged(next);
-        },
-      );
+  ) => DropdownButtonFormField<String>(
+    initialValue: value,
+    isExpanded: true,
+    decoration: InputDecoration(labelText: label),
+    items: values
+        .map(
+          (item) => DropdownMenuItem(
+            value: item,
+            child: Text(item, overflow: TextOverflow.ellipsis),
+          ),
+        )
+        .toList(),
+    onChanged: (next) {
+      if (next != null) onChanged(next);
+    },
+  );
 }
 
 class _Statistics extends StatelessWidget {
@@ -172,8 +169,9 @@ class _Statistics extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final unresolved =
-        complaints.where((item) => item.status != 'RESOLVED').length;
+    final unresolved = complaints
+        .where((item) => item.status != 'RESOLVED')
+        .length;
     final urgent = complaints
         .where((item) => ['URGENT', 'HIGH'].contains(item.priority))
         .length;
@@ -211,8 +209,7 @@ class _StaffComplaintDetails extends StatefulWidget {
   });
 
   @override
-  State<_StaffComplaintDetails> createState() =>
-      _StaffComplaintDetailsState();
+  State<_StaffComplaintDetails> createState() => _StaffComplaintDetailsState();
 }
 
 class _StaffComplaintDetailsState extends State<_StaffComplaintDetails> {
@@ -256,9 +253,9 @@ class _StaffComplaintDetailsState extends State<_StaffComplaintDetails> {
       );
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Update failed: $error')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Update failed: $error')));
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -276,9 +273,9 @@ class _StaffComplaintDetailsState extends State<_StaffComplaintDetails> {
       );
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('AI analysis failed: $error')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('AI analysis failed: $error')));
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -384,9 +381,9 @@ class _StaffComplaintDetailsState extends State<_StaffComplaintDetails> {
       );
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Update failed: $error')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Update failed: $error')));
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -394,204 +391,193 @@ class _StaffComplaintDetailsState extends State<_StaffComplaintDetails> {
 
   @override
   Widget build(BuildContext context) => StreamBuilder<Complaint?>(
-        stream: ComplaintServiceData.instance.streamComplaintById(
-          widget.complaint.id,
-        ),
-        builder: (context, snapshot) {
-          final complaint = snapshot.data ?? widget.complaint;
-          return Scaffold(
-            appBar: AppBar(title: Text(complaint.trackingNumber)),
-            body: ListView(
-              padding: const EdgeInsets.all(20),
+    stream: ComplaintServiceData.instance.streamComplaintById(
+      widget.complaint.id,
+    ),
+    builder: (context, snapshot) {
+      final complaint = snapshot.data ?? widget.complaint;
+      return Scaffold(
+        appBar: AppBar(title: Text(complaint.trackingNumber)),
+        body: ListView(
+          padding: const EdgeInsets.all(20),
+          children: [
+            Row(
               children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        complaint.title,
-                        style: Theme.of(context).textTheme.headlineSmall,
-                      ),
-                    ),
-                    StatusChip(label: complaint.status),
-                  ],
+                Expanded(
+                  child: Text(
+                    complaint.title,
+                    style: Theme.of(context).textTheme.headlineSmall,
+                  ),
                 ),
-                const SizedBox(height: 16),
-                Text(complaint.description),
-                const SizedBox(height: 16),
-                if (complaint.aiSummary != null ||
-                    complaint.aiSuggestedCategory != null ||
-                    complaint.aiSuggestedPriority != null ||
-                    complaint.aiSuggestedDepartment != null ||
-                    complaint.aiDuplicateScore > 0 ||
-                    complaint.aiImageAssessment.isNotEmpty)
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'AI Suggestion',
-                            style: Theme.of(context).textTheme.titleMedium,
-                          ),
-                          if (complaint.aiSummary != null)
-                            Text('Summary: ${complaint.aiSummary}'),
-                          if (complaint.aiSuggestedCategory != null)
-                            Text(
-                              'Suggested Category: ${complaint.aiSuggestedCategory}',
-                            ),
-                          if (complaint.aiSuggestedPriority != null)
-                            Text(
-                              'Suggested Priority: ${complaint.aiSuggestedPriority}',
-                            ),
-                          if (complaint.aiSuggestedDepartment != null)
-                            Text(
-                              'Suggested Department: ${complaint.aiSuggestedDepartment}',
-                            ),
-                          if (complaint.aiDuplicateScore > 0)
-                            Text(
-                              'Duplicate confidence: ${(complaint.aiDuplicateScore * 100).round()}%',
-                            ),
-                          if (complaint.aiDuplicateReason.isNotEmpty)
-                            Text(
-                              'Duplicate analysis: ${complaint.aiDuplicateReason}',
-                            ),
-                          if (complaint.aiImageAssessment.isNotEmpty)
-                            Text(
-                              'Image evidence analysis: ${complaint.aiImageAssessment}',
-                            ),
-                          const SizedBox(height: 6),
-                          const Text(
-                            'AI output is advisory only. Officers verify information; only the Director makes the final decision.',
-                            style: TextStyle(fontStyle: FontStyle.italic),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                const SizedBox(height: 16),
-                Text('Student ID: ${complaint.studentId}'),
-                if ((complaint.correctionNote ?? '').isNotEmpty)
-                  Text('Resubmission request: ${complaint.correctionNote}'),
-                if ((complaint.officerResponse ?? '').isNotEmpty)
-                  Text('Officer review: ${complaint.officerResponse}'),
-                if ((complaint.directorResponse ?? '').isNotEmpty)
-                  Text('Director decision: ${complaint.directorResponse}'),
-                const SizedBox(height: 16),
-                if (!widget.director) ...[
-                  DropdownButtonFormField<String>(
-                    initialValue: _category,
-                    decoration: const InputDecoration(labelText: 'Category'),
-                    items: _categories
-                        .map(
-                          (item) => DropdownMenuItem(
-                            value: item,
-                            child: Text(item),
-                          ),
-                        )
-                        .toList(),
-                    onChanged: ['SUBMITTED', 'RESUBMITTED']
-                            .contains(complaint.status)
-                        ? (value) =>
-                            setState(() => _category = value ?? _category)
-                        : null,
-                  ),
-                  const SizedBox(height: 12),
-                  DropdownButtonFormField<String>(
-                    initialValue: _priority,
-                    decoration: const InputDecoration(labelText: 'Priority'),
-                    items: _priorities
-                        .map(
-                          (item) => DropdownMenuItem(
-                            value: item,
-                            child: Text(item),
-                          ),
-                        )
-                        .toList(),
-                    onChanged: ['SUBMITTED', 'RESUBMITTED']
-                            .contains(complaint.status)
-                        ? (value) =>
-                            setState(() => _priority = value ?? _priority)
-                        : null,
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: _response,
-                    enabled: ['SUBMITTED', 'RESUBMITTED']
-                        .contains(complaint.status),
-                    maxLines: 4,
-                    decoration: const InputDecoration(
-                      labelText: 'Officer working note',
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  OutlinedButton.icon(
-                    onPressed: _saving
-                        ? null
-                        : () => _runAiAnalysis(complaint),
-                    icon: const Icon(Icons.auto_awesome_outlined),
-                    label: const Text('Run AI complaint analysis'),
-                  ),
-                  const SizedBox(height: 8),
-                  if (['SUBMITTED', 'RESUBMITTED'].contains(complaint.status))
-                    FilledButton(
-                      onPressed:
-                          _saving ? null : () => _saveFields(complaint),
-                      child: const Text('Save review details'),
-                    ),
-                  const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
+                StatusChip(label: complaint.status),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Text(complaint.description),
+            const SizedBox(height: 16),
+            if (complaint.aiSummary != null ||
+                complaint.aiSuggestedCategory != null ||
+                complaint.aiSuggestedPriority != null ||
+                complaint.aiSuggestedDepartment != null ||
+                complaint.aiDuplicateScore > 0 ||
+                complaint.aiImageAssessment.isNotEmpty)
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      if (['SUBMITTED', 'RESUBMITTED']
-                          .contains(complaint.status)) ...[
-                        OutlinedButton(
-                          onPressed: _saving
-                              ? null
-                              : () => _requestResubmission(complaint),
-                          child: const Text('Request resubmission'),
+                      Text(
+                        'AI Suggestion',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      if (complaint.aiSummary != null)
+                        Text('Summary: ${complaint.aiSummary}'),
+                      if (complaint.aiSuggestedCategory != null)
+                        Text(
+                          'Suggested Category: ${complaint.aiSuggestedCategory}',
                         ),
-                        FilledButton(
-                          onPressed: _saving
-                              ? null
-                              : () => _sendToDirector(complaint),
-                          child: const Text('Send to Director'),
+                      if (complaint.aiSuggestedPriority != null)
+                        Text(
+                          'Suggested Priority: ${complaint.aiSuggestedPriority}',
                         ),
-                      ],
-                      if (complaint.status == 'CORRECTION_REQUIRED')
-                        const Chip(
-                          label: Text('Waiting for student resubmission'),
+                      if (complaint.aiSuggestedDepartment != null)
+                        Text(
+                          'Suggested Department: ${complaint.aiSuggestedDepartment}',
                         ),
-                      if (complaint.status == 'OFFICER_REVIEW_COMPLETE')
-                        const Chip(
-                          label: Text('Waiting for Director decision'),
+                      if (complaint.aiDuplicateScore > 0)
+                        Text(
+                          'Duplicate confidence: ${(complaint.aiDuplicateScore * 100).round()}%',
                         ),
+                      if (complaint.aiDuplicateReason.isNotEmpty)
+                        Text(
+                          'Duplicate analysis: ${complaint.aiDuplicateReason}',
+                        ),
+                      if (complaint.aiImageAssessment.isNotEmpty)
+                        Text(
+                          'Image evidence analysis: ${complaint.aiImageAssessment}',
+                        ),
+                      const SizedBox(height: 6),
+                      const Text(
+                        'AI output is advisory only. Officers verify information; only the Director makes the final decision.',
+                        style: TextStyle(fontStyle: FontStyle.italic),
+                      ),
                     ],
                   ),
-                ] else ...[
-                  if (complaint.status == 'OFFICER_REVIEW_COMPLETE')
-                    FilledButton(
-                      onPressed: _saving ? null : () => _resolve(complaint),
-                      child: const Text('Resolve complaint'),
+                ),
+              ),
+            const SizedBox(height: 16),
+            Text('Student ID: ${complaint.studentId}'),
+            if ((complaint.correctionNote ?? '').isNotEmpty)
+              Text('Resubmission request: ${complaint.correctionNote}'),
+            if ((complaint.officerResponse ?? '').isNotEmpty)
+              Text('Officer review: ${complaint.officerResponse}'),
+            if ((complaint.directorResponse ?? '').isNotEmpty)
+              Text('Director decision: ${complaint.directorResponse}'),
+            const SizedBox(height: 16),
+            if (!widget.director) ...[
+              DropdownButtonFormField<String>(
+                initialValue: _category,
+                decoration: const InputDecoration(labelText: 'Category'),
+                items: _categories
+                    .map(
+                      (item) =>
+                          DropdownMenuItem(value: item, child: Text(item)),
                     )
-                  else if (complaint.status == 'SUBMITTED' ||
-                      complaint.status == 'RESUBMITTED')
-                    const Chip(label: Text('Waiting for Officer review'))
-                  else if (complaint.status == 'CORRECTION_REQUIRED')
-                    const Chip(
-                      label: Text('Waiting for student resubmission'),
+                    .toList(),
+                onChanged:
+                    ['SUBMITTED', 'RESUBMITTED'].contains(complaint.status)
+                    ? (value) => setState(() => _category = value ?? _category)
+                    : null,
+              ),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<String>(
+                initialValue: _priority,
+                decoration: const InputDecoration(labelText: 'Priority'),
+                items: _priorities
+                    .map(
+                      (item) =>
+                          DropdownMenuItem(value: item, child: Text(item)),
+                    )
+                    .toList(),
+                onChanged:
+                    ['SUBMITTED', 'RESUBMITTED'].contains(complaint.status)
+                    ? (value) => setState(() => _priority = value ?? _priority)
+                    : null,
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _response,
+                enabled: [
+                  'SUBMITTED',
+                  'RESUBMITTED',
+                ].contains(complaint.status),
+                maxLines: 4,
+                decoration: const InputDecoration(
+                  labelText: 'Officer working note',
+                ),
+              ),
+              const SizedBox(height: 12),
+              OutlinedButton.icon(
+                onPressed: _saving ? null : () => _runAiAnalysis(complaint),
+                icon: const Icon(Icons.auto_awesome_outlined),
+                label: const Text('Run AI complaint analysis'),
+              ),
+              const SizedBox(height: 8),
+              if (['SUBMITTED', 'RESUBMITTED'].contains(complaint.status))
+                FilledButton(
+                  onPressed: _saving ? null : () => _saveFields(complaint),
+                  child: const Text('Save review details'),
+                ),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  if ([
+                    'SUBMITTED',
+                    'RESUBMITTED',
+                  ].contains(complaint.status)) ...[
+                    OutlinedButton(
+                      onPressed: _saving
+                          ? null
+                          : () => _requestResubmission(complaint),
+                      child: const Text('Request resubmission'),
                     ),
+                    FilledButton(
+                      onPressed: _saving
+                          ? null
+                          : () => _sendToDirector(complaint),
+                      child: const Text('Send to Director'),
+                    ),
+                  ],
+                  if (complaint.status == 'CORRECTION_REQUIRED')
+                    const Chip(label: Text('Waiting for student resubmission')),
+                  if (complaint.status == 'OFFICER_REVIEW_COMPLETE')
+                    const Chip(label: Text('Waiting for Director decision')),
                 ],
-                const SizedBox(height: 20),
-                FutureBuilder<List<Map<String, dynamic>>>(
-                  future: ComplaintServiceData.instance.getStatusHistory(
-                    complaint.id,
-                  ),
-                  builder: (context, historySnapshot) => ExpansionTile(
-                    title: const Text('Status history'),
-                    children: (historySnapshot.data ??
-                            const <Map<String, dynamic>>[])
+              ),
+            ] else ...[
+              if (complaint.status == 'OFFICER_REVIEW_COMPLETE')
+                FilledButton(
+                  onPressed: _saving ? null : () => _resolve(complaint),
+                  child: const Text('Resolve complaint'),
+                )
+              else if (complaint.status == 'SUBMITTED' ||
+                  complaint.status == 'RESUBMITTED')
+                const Chip(label: Text('Waiting for Officer review'))
+              else if (complaint.status == 'CORRECTION_REQUIRED')
+                const Chip(label: Text('Waiting for student resubmission')),
+            ],
+            const SizedBox(height: 20),
+            FutureBuilder<List<Map<String, dynamic>>>(
+              future: ComplaintServiceData.instance.getStatusHistory(
+                complaint.id,
+              ),
+              builder: (context, historySnapshot) => ExpansionTile(
+                title: const Text('Status history'),
+                children:
+                    (historySnapshot.data ?? const <Map<String, dynamic>>[])
                         .map(
                           (item) => ListTile(
                             title: Text(item['status']?.toString() ?? ''),
@@ -599,11 +585,11 @@ class _StaffComplaintDetailsState extends State<_StaffComplaintDetails> {
                           ),
                         )
                         .toList(),
-                  ),
-                ),
-              ],
+              ),
             ),
-          );
-        },
+          ],
+        ),
       );
+    },
+  );
 }

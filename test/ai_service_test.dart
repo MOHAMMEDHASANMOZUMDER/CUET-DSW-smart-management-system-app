@@ -6,10 +6,7 @@ void main() {
     test('character certificate form check flags missing fields', () {
       final result = GeminiAssistantService.instance.checkApplicationForm(
         applicationType: 'Character Certificate',
-        formFields: {
-          'studentName': 'Ayesha Rahman',
-          'department': 'CSE',
-        },
+        formFields: {'studentName': 'Ayesha Rahman', 'department': 'CSE'},
       );
 
       expect(result['complete'], isFalse);
