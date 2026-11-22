@@ -22,6 +22,22 @@ class ServiceRequest {
 
   static const finalStatuses = ['APPROVED', 'REJECTED', 'RESOLVED'];
 
+  static void validateSubmission({
+    required String requestType,
+    required String title,
+    required String description,
+  }) {
+    if (!requestTypes.containsKey(requestType)) {
+      throw StateError('Please select a valid service category.');
+    }
+    if (title.trim().isEmpty) {
+      throw StateError('A request title is required.');
+    }
+    if (description.trim().length < 20) {
+      throw StateError('Enter at least 20 characters describing the request.');
+    }
+  }
+
   final String id;
   final String trackingNumber;
   final String studentUid;

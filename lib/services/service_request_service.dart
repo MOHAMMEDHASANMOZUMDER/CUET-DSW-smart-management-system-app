@@ -21,6 +21,11 @@ class ServiceRequestService {
       _firestore.collection('service_requests');
 
   Future<String> submit(ServiceRequest request) async {
+    ServiceRequest.validateSubmission(
+      requestType: request.requestType,
+      title: request.title,
+      description: request.description,
+    );
     final ref = _requests.doc(
       request.id.isEmpty ? _requests.doc().id : request.id,
     );
