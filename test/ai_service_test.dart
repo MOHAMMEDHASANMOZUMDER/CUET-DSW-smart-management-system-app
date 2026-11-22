@@ -37,5 +37,18 @@ void main() {
       expect(formResult['complete'], isFalse);
       expect(GeminiAssistantService.advisoryNotice, contains('advisory'));
     });
+
+    test('emergency safety triage stays structured and advisory', () {
+      final result = GeminiAssistantService.instance.triageComplaint(
+        title: 'Threat near student hall',
+        description: 'An immediate threat was reported near the hall entrance.',
+        category: 'Harassment / Safety',
+      );
+
+      expect(result['suggestedCategory'], 'Harassment / Safety');
+      expect(result['urgency'], 'High');
+      expect(result['recommendedOffice'], 'Student Safety & Discipline Office');
+      expect(result['advisoryNotice'], contains('advisory'));
+    });
   });
 }
