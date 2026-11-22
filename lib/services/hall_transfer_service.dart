@@ -21,14 +21,14 @@ class HallTransferStatus {
   static const String rejected = 'REJECTED';
 
   static String timelineLabel(String status) => switch (status) {
-        submitted => 'Submitted for Officer Review',
-        correctionRequired => 'Resubmission Required',
-        resubmitted => 'Resubmitted for Officer Review',
-        officerReviewComplete => 'Sent to DSW Director',
-        approved => 'Approved by Director',
-        rejected => 'Rejected by Director',
-        _ => status,
-      };
+    submitted => 'Submitted for Officer Review',
+    correctionRequired => 'Resubmission Required',
+    resubmitted => 'Resubmitted for Officer Review',
+    officerReviewComplete => 'Sent to DSW Director',
+    approved => 'Approved by Director',
+    rejected => 'Rejected by Director',
+    _ => status,
+  };
 
   static List<String> timeline(String status) {
     if (status == correctionRequired) {
@@ -92,7 +92,8 @@ class HallTransferService {
       applicationId: id,
       action: HallTransferStatus.submitted,
       performedBy: actor.uid,
-      comment: 'Student submitted the hall transfer request for Officer review.',
+      comment:
+          'Student submitted the hall transfer request for Officer review.',
     );
     await NotificationService.instance.createNotification(
       userUid: actor.uid,
@@ -144,10 +145,8 @@ class HallTransferService {
       applicationId,
       status: next,
       currentReviewer: officer.uid,
-      officerComment:
-          decision == 'complete_review' ? comment.trim() : null,
-      correctionNote:
-          decision == 'request_correction' ? comment.trim() : null,
+      officerComment: decision == 'complete_review' ? comment.trim() : null,
+      correctionNote: decision == 'request_correction' ? comment.trim() : null,
     );
     await _afterStaffTransition(
       application: application,
@@ -314,15 +313,14 @@ class HallTransferService {
     required String action,
     required String performedBy,
     required String comment,
-  }) =>
-      ApplicationHistoryService.instance.addHistoryEntry(
-        ApplicationHistory(
-          id: '',
-          applicationId: applicationId,
-          action: action,
-          performedBy: performedBy,
-          comment: comment,
-          timestamp: DateTime.now(),
-        ),
-      );
+  }) => ApplicationHistoryService.instance.addHistoryEntry(
+    ApplicationHistory(
+      id: '',
+      applicationId: applicationId,
+      action: action,
+      performedBy: performedBy,
+      comment: comment,
+      timestamp: DateTime.now(),
+    ),
+  );
 }

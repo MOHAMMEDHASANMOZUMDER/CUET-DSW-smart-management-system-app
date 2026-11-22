@@ -39,8 +39,9 @@ class _ApplicationDetailsBody extends StatelessWidget {
         application.type == HallTransferService.applicationType;
     final timeline = isHallTransfer
         ? HallTransferStatus.timeline(application.status)
-        : CharacterCertificateService.instance
-            .statusTimelineForApplication(application.status);
+        : CharacterCertificateService.instance.statusTimelineForApplication(
+            application.status,
+          );
 
     return Scaffold(
       appBar: AppBar(title: const Text('Application Details')),
@@ -121,30 +122,30 @@ class _ApplicationDetailsBody extends StatelessWidget {
                 children: application.documents.isEmpty
                     ? [const Text('No documents attached.')]
                     : application.documents
-                        .map(
-                          (document) => ListTile(
-                            dense: true,
-                            contentPadding: EdgeInsets.zero,
-                            leading: const Icon(Icons.attach_file_rounded),
-                            title: Text(
-                              (document['name'] ??
-                                      document['fileName'] ??
-                                      'Document')
-                                  .toString(),
+                          .map(
+                            (document) => ListTile(
+                              dense: true,
+                              contentPadding: EdgeInsets.zero,
+                              leading: const Icon(Icons.attach_file_rounded),
+                              title: Text(
+                                (document['name'] ??
+                                        document['fileName'] ??
+                                        'Document')
+                                    .toString(),
+                              ),
+                              trailing: document['url'] is String
+                                  ? IconButton(
+                                      tooltip: 'Open document',
+                                      icon: const Icon(Icons.open_in_new),
+                                      onPressed: () => launchUrl(
+                                        Uri.parse(document['url'] as String),
+                                        mode: LaunchMode.externalApplication,
+                                      ),
+                                    )
+                                  : null,
                             ),
-                            trailing: document['url'] is String
-                                ? IconButton(
-                                    tooltip: 'Open document',
-                                    icon: const Icon(Icons.open_in_new),
-                                    onPressed: () => launchUrl(
-                                      Uri.parse(document['url'] as String),
-                                      mode: LaunchMode.externalApplication,
-                                    ),
-                                  )
-                                : null,
-                          ),
-                        )
-                        .toList(),
+                          )
+                          .toList(),
               ),
               const SizedBox(height: 16),
               _InfoCard(
@@ -177,7 +178,8 @@ class _ApplicationDetailsBody extends StatelessWidget {
                   future: UserService.instance.getCurrentUserProfile(),
                   builder: (context, snapshot) {
                     final profile = snapshot.data;
-                    final canResubmit = profile != null &&
+                    final canResubmit =
+                        profile != null &&
                         StudentUser.normalizeRole(profile.role) == 'student' &&
                         profile.uid == application.studentUid;
                     if (!canResubmit) return const SizedBox.shrink();
@@ -229,7 +231,10 @@ class _ApplicationDetailsBody extends StatelessWidget {
                 ),
               ],
               const SizedBox(height: 20),
-              Text('Status Timeline', style: Theme.of(context).textTheme.titleLarge),
+              Text(
+                'Status Timeline',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
               const SizedBox(height: 12),
               ...timeline.map(
                 (step) => Padding(
@@ -260,9 +265,12 @@ class _ApplicationDetailsBody extends StatelessWidget {
   Future<void> _showResubmitDialog(BuildContext context) async {
     final purpose = TextEditingController(text: application.purpose);
     final description = TextEditingController(text: application.description);
-    final currentHall = TextEditingController(text: application.currentHall ?? '');
-    final requestedHall =
-        TextEditingController(text: application.requestedHall ?? '');
+    final currentHall = TextEditingController(
+      text: application.currentHall ?? '',
+    );
+    final requestedHall = TextEditingController(
+      text: application.requestedHall ?? '',
+    );
     final reason = TextEditingController(text: application.reason ?? '');
 
     final submitted = await showDialog<bool>(
@@ -290,7 +298,9 @@ class _ApplicationDetailsBody extends StatelessWidget {
                 ),
                 TextField(
                   controller: requestedHall,
-                  decoration: const InputDecoration(labelText: 'Requested Hall'),
+                  decoration: const InputDecoration(
+                    labelText: 'Requested Hall',
+                  ),
                 ),
                 TextField(
                   controller: reason,
@@ -342,9 +352,9 @@ class _ApplicationDetailsBody extends StatelessWidget {
       );
     } catch (error) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.toString())),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.toString())));
     }
   }
 }
@@ -356,50 +366,50 @@ class _CertificateActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => _InfoCard(
-        title: 'Issued Certificate',
+    title: 'Issued Certificate',
+    children: [
+      const Text(
+        'Your Character Certificate has been issued. You can preview it or save/share the PDF using your device.',
+      ),
+      const SizedBox(height: 12),
+      Wrap(
+        spacing: 10,
+        runSpacing: 10,
         children: [
-          const Text(
-            'Your Character Certificate has been issued. You can preview it or save/share the PDF using your device.',
-          ),
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 10,
-            runSpacing: 10,
-            children: [
-              OutlinedButton.icon(
-                onPressed: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => CertificatePreviewScreen(
-                      application: application,
-                      student: student,
-                    ),
-                  ),
+          OutlinedButton.icon(
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => CertificatePreviewScreen(
+                  application: application,
+                  student: student,
                 ),
-                icon: const Icon(Icons.visibility_outlined),
-                label: const Text('View Certificate'),
               ),
-              FilledButton.icon(
-                onPressed: () async {
-                  try {
-                    await CertificatePdfService.instance.downloadCertificate(
-                      application: application,
-                      student: student,
-                    );
-                  } catch (error) {
-                    if (!context.mounted) return;
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Certificate error: $error')),
-                    );
-                  }
-                },
-                icon: const Icon(Icons.download_outlined),
-                label: const Text('Download PDF'),
-              ),
-            ],
+            ),
+            icon: const Icon(Icons.visibility_outlined),
+            label: const Text('View Certificate'),
+          ),
+          FilledButton.icon(
+            onPressed: () async {
+              try {
+                await CertificatePdfService.instance.downloadCertificate(
+                  application: application,
+                  student: student,
+                );
+              } catch (error) {
+                if (!context.mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Certificate error: $error')),
+                );
+              }
+            },
+            icon: const Icon(Icons.download_outlined),
+            label: const Text('Download PDF'),
           ),
         ],
-      );
+      ),
+    ],
+  );
 }
 
 class _InfoCard extends StatelessWidget {
@@ -409,22 +419,22 @@ class _InfoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: Theme.of(context).dividerColor),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(title, style: Theme.of(context).textTheme.titleSmall),
-            const SizedBox(height: 12),
-            ...children,
-          ],
-        ),
-      );
+    width: double.infinity,
+    padding: const EdgeInsets.all(16),
+    decoration: BoxDecoration(
+      color: Theme.of(context).colorScheme.surface,
+      borderRadius: BorderRadius.circular(18),
+      border: Border.all(color: Theme.of(context).dividerColor),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title, style: Theme.of(context).textTheme.titleSmall),
+        const SizedBox(height: 12),
+        ...children,
+      ],
+    ),
+  );
 }
 
 class _DetailRow extends StatelessWidget {
@@ -434,19 +444,16 @@ class _DetailRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.only(bottom: 8),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(
-              width: 120,
-              child: Text(
-                label,
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-            ),
-            Expanded(child: Text(value)),
-          ],
+    padding: const EdgeInsets.only(bottom: 8),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 120,
+          child: Text(label, style: Theme.of(context).textTheme.bodyMedium),
         ),
-      );
+        Expanded(child: Text(value)),
+      ],
+    ),
+  );
 }

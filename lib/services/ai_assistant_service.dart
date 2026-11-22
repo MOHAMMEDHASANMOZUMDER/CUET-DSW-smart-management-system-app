@@ -73,11 +73,14 @@ class GeminiAssistantService {
           'Complete the missing fields before final submission to reduce delays.',
         );
       }
-      final hasReviewItems = missingFields.isNotEmpty ||
+      final hasReviewItems =
+          missingFields.isNotEmpty ||
           unclearStatements.isNotEmpty ||
           possibleInconsistencies.isNotEmpty;
       if (!hasReviewItems && suggestions.isEmpty) {
-        suggestions.add('No major issues detected from the current information.');
+        suggestions.add(
+          'No major issues detected from the current information.',
+        );
       } else if (hasReviewItems && suggestions.isEmpty) {
         suggestions.add('Review the items above before submitting the form.');
       }

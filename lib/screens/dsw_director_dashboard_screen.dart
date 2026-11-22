@@ -80,7 +80,9 @@ class _DSWDirectorDashboardScreenState extends State<DSWDirectorDashboardScreen>
     }
 
     final note = await _askForNote(
-      title: decision == 'approve' ? 'Approve application' : 'Reject application',
+      title: decision == 'approve'
+          ? 'Approve application'
+          : 'Reject application',
       button: decision == 'approve' ? 'Approve' : 'Reject',
     );
     if (note == null || !mounted) return;
@@ -116,7 +118,9 @@ class _DSWDirectorDashboardScreenState extends State<DSWDirectorDashboardScreen>
           autofocus: true,
           minLines: 3,
           maxLines: 6,
-          decoration: const InputDecoration(labelText: 'Official Director note'),
+          decoration: const InputDecoration(
+            labelText: 'Official Director note',
+          ),
           onChanged: (value) => draft = value,
         ),
         actions: [
@@ -157,237 +161,223 @@ class _DSWDirectorDashboardScreenState extends State<DSWDirectorDashboardScreen>
       if (error is FirebaseException) {
         message = 'Firebase Error [${error.code}]: ${error.message}';
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
     }
   }
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(
-          title: const Text('DSW Director Dashboard'),
-          actions: [
-            StreamBuilder<int>(
-              stream: NotificationService.instance.streamUnreadCount(),
-              builder: (context, snapshot) => IconButton(
-                tooltip: 'Notifications',
-                icon: Badge(
-                  isLabelVisible: (snapshot.data ?? 0) > 0,
-                  label: Text('${snapshot.data ?? 0}'),
-                  child: const Icon(Icons.notifications_outlined),
-                ),
-                onPressed: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const NotificationsScreen(),
-                  ),
-                ),
-              ),
+    appBar: AppBar(
+      title: const Text('DSW Director Dashboard'),
+      actions: [
+        StreamBuilder<int>(
+          stream: NotificationService.instance.streamUnreadCount(),
+          builder: (context, snapshot) => IconButton(
+            tooltip: 'Notifications',
+            icon: Badge(
+              isLabelVisible: (snapshot.data ?? 0) > 0,
+              label: Text('${snapshot.data ?? 0}'),
+              child: const Icon(Icons.notifications_outlined),
             ),
-            IconButton(
-              icon: const Icon(Icons.inbox_outlined),
-              tooltip: 'Service request oversight',
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const ServiceRequestManagementScreen(
-                    directorMode: true,
-                  ),
-                ),
-              ),
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const NotificationsScreen()),
             ),
-            IconButton(
-              icon: const Icon(Icons.analytics_outlined),
-              tooltip: 'Analytics',
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const AnalyticsDashboardScreen(),
-                ),
-              ),
-            ),
-            IconButton(
-              icon: const Icon(Icons.support_agent_outlined),
-              tooltip: 'Complaints',
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const ComplaintManagementScreen(
-                    director: true,
-                  ),
-                ),
-              ),
-            ),
-            IconButton(
-              icon: const Icon(Icons.logout_rounded),
-              tooltip: 'Logout',
-              onPressed: () => AuthService.instance.signOut(),
-            ),
-          ],
+          ),
         ),
-        body: FutureBuilder<_DirectorData>(
-          future: _dataFuture,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            if (snapshot.hasError) {
-              return Center(
-                child: Text(
-                  'Unable to load Director dashboard: ${snapshot.error}',
-                ),
-              );
-            }
+        IconButton(
+          icon: const Icon(Icons.inbox_outlined),
+          tooltip: 'Service request oversight',
+          onPressed: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) =>
+                  const ServiceRequestManagementScreen(directorMode: true),
+            ),
+          ),
+        ),
+        IconButton(
+          icon: const Icon(Icons.analytics_outlined),
+          tooltip: 'Analytics',
+          onPressed: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const AnalyticsDashboardScreen()),
+          ),
+        ),
+        IconButton(
+          icon: const Icon(Icons.support_agent_outlined),
+          tooltip: 'Complaints',
+          onPressed: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const ComplaintManagementScreen(director: true),
+            ),
+          ),
+        ),
+        IconButton(
+          icon: const Icon(Icons.logout_rounded),
+          tooltip: 'Logout',
+          onPressed: () => AuthService.instance.signOut(),
+        ),
+      ],
+    ),
+    body: FutureBuilder<_DirectorData>(
+      future: _dataFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (snapshot.hasError) {
+          return Center(
+            child: Text('Unable to load Director dashboard: ${snapshot.error}'),
+          );
+        }
 
-            final data = snapshot.data!;
-            final waitingDirector = data.applications
-                .where((item) => item.status == 'OFFICER_REVIEW_COMPLETE')
-                .length;
-            final approved = data.applications
-                .where(
-                  (item) =>
-                      ['APPROVED', 'CERTIFICATE_ISSUED'].contains(item.status),
-                )
-                .length;
-            final rejected = data.applications
-                .where((item) => item.status == 'REJECTED')
-                .length;
-            final complaintsWaiting = data.complaints
-                .where((item) => item.status == 'OFFICER_REVIEW_COMPLETE')
-                .length;
+        final data = snapshot.data!;
+        final waitingDirector = data.applications
+            .where((item) => item.status == 'OFFICER_REVIEW_COMPLETE')
+            .length;
+        final approved = data.applications
+            .where(
+              (item) =>
+                  ['APPROVED', 'CERTIFICATE_ISSUED'].contains(item.status),
+            )
+            .length;
+        final rejected = data.applications
+            .where((item) => item.status == 'REJECTED')
+            .length;
+        final complaintsWaiting = data.complaints
+            .where((item) => item.status == 'OFFICER_REVIEW_COMPLETE')
+            .length;
 
-            return RefreshIndicator(
-              onRefresh: _refresh,
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
-                children: [
-                  Text(
-                    'Director overview',
-                    style: Theme.of(context).textTheme.headlineSmall,
+        return RefreshIndicator(
+          onRefresh: _refresh,
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
+            children: [
+              Text(
+                'Director overview',
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+              const SizedBox(height: 4),
+              const Text(
+                'Requests first go to DSW Officers. The Director acts after an Officer completes the information review.',
+              ),
+              const SizedBox(height: 18),
+              _SummaryGrid(
+                items: [
+                  (
+                    'Applications waiting',
+                    waitingDirector,
+                    Icons.pending_actions_outlined,
                   ),
-                  const SizedBox(height: 4),
-                  const Text(
-                    'Requests first go to DSW Officers. The Director acts after an Officer completes the information review.',
-                  ),
-                  const SizedBox(height: 18),
-                  _SummaryGrid(
-                    items: [
-                      (
-                        'Applications waiting',
-                        waitingDirector,
-                        Icons.pending_actions_outlined,
-                      ),
-                      ('Approved', approved, Icons.check_circle_outline),
-                      ('Rejected', rejected, Icons.cancel_outlined),
-                      (
-                        'Complaints waiting',
-                        complaintsWaiting,
-                        Icons.report_outlined,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-                  Text(
-                    'Applications',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  const SizedBox(height: 10),
-                  TabBar(
-                    controller: _tabs,
-                    tabs: const [
-                      Tab(text: 'Character Certificate'),
-                      Tab(text: 'Hall Transfer'),
-                    ],
-                  ),
-                  SizedBox(
-                    height: 470,
-                    child: TabBarView(
-                      controller: _tabs,
-                      children: [
-                        _DirectorApplicationList(
-                          applications: data.applications
-                              .where(
-                                (item) =>
-                                    item.type == 'character_certificate',
-                              )
-                              .toList(),
-                          onDecision: _decision,
-                        ),
-                        _DirectorApplicationList(
-                          applications: data.applications
-                              .where(
-                                (item) =>
-                                    item.type ==
-                                    HallTransferService.applicationType,
-                              )
-                              .toList(),
-                          onDecision: _decision,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  _DashboardLink(
-                    title: 'Unified service request oversight',
-                    subtitle:
-                        'Make final decisions after Officer review is complete',
-                    icon: Icons.inbox_outlined,
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const ServiceRequestManagementScreen(
-                          directorMode: true,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  _DashboardLink(
-                    title: 'Complaints',
-                    subtitle:
-                        '$complaintsWaiting complaints are ready for Director action',
-                    icon: Icons.support_agent_outlined,
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const ComplaintManagementScreen(
-                          director: true,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  _DashboardLink(
-                    title: 'AI analytics',
-                    subtitle: 'KPIs and advisory management insights',
-                    icon: Icons.analytics_outlined,
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const AnalyticsDashboardScreen(),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  _DashboardLink(
-                    title: 'Student registry management',
-                    subtitle: 'Manage students allowed to create accounts',
-                    icon: Icons.badge_outlined,
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) =>
-                            const StudentRegistryManagementScreen(),
-                      ),
-                    ),
+                  ('Approved', approved, Icons.check_circle_outline),
+                  ('Rejected', rejected, Icons.cancel_outlined),
+                  (
+                    'Complaints waiting',
+                    complaintsWaiting,
+                    Icons.report_outlined,
                   ),
                 ],
               ),
-            );
-          },
-        ),
-      );
+              const SizedBox(height: 24),
+              Text(
+                'Applications',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: 10),
+              TabBar(
+                controller: _tabs,
+                tabs: const [
+                  Tab(text: 'Character Certificate'),
+                  Tab(text: 'Hall Transfer'),
+                ],
+              ),
+              SizedBox(
+                height: 470,
+                child: TabBarView(
+                  controller: _tabs,
+                  children: [
+                    _DirectorApplicationList(
+                      applications: data.applications
+                          .where((item) => item.type == 'character_certificate')
+                          .toList(),
+                      onDecision: _decision,
+                    ),
+                    _DirectorApplicationList(
+                      applications: data.applications
+                          .where(
+                            (item) =>
+                                item.type ==
+                                HallTransferService.applicationType,
+                          )
+                          .toList(),
+                      onDecision: _decision,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              _DashboardLink(
+                title: 'Unified service request oversight',
+                subtitle:
+                    'Make final decisions after Officer review is complete',
+                icon: Icons.inbox_outlined,
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const ServiceRequestManagementScreen(
+                      directorMode: true,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              _DashboardLink(
+                title: 'Complaints',
+                subtitle:
+                    '$complaintsWaiting complaints are ready for Director action',
+                icon: Icons.support_agent_outlined,
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) =>
+                        const ComplaintManagementScreen(director: true),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              _DashboardLink(
+                title: 'AI analytics',
+                subtitle: 'KPIs and advisory management insights',
+                icon: Icons.analytics_outlined,
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const AnalyticsDashboardScreen(),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              _DashboardLink(
+                title: 'Student registry management',
+                subtitle: 'Manage students allowed to create accounts',
+                icon: Icons.badge_outlined,
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const StudentRegistryManagementScreen(),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    ),
+  );
 }
 
 class _DirectorApplicationList extends StatelessWidget {
@@ -424,9 +414,7 @@ class _DirectorApplicationList extends StatelessWidget {
           ]);
         } else if (application.status == 'SUBMITTED' ||
             application.status == 'RESUBMITTED') {
-          actions.add(
-            const Chip(label: Text('Waiting for Officer review')),
-          );
+          actions.add(const Chip(label: Text('Waiting for Officer review')));
         } else if (application.status == 'CORRECTION_REQUIRED') {
           actions.add(
             const Chip(label: Text('Waiting for student resubmission')),
@@ -497,41 +485,41 @@ class _SummaryGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => GridView.count(
-        crossAxisCount: 2,
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        crossAxisSpacing: 10,
-        mainAxisSpacing: 10,
-        childAspectRatio: 1.45,
-        children: items
-            .map(
-              (item) => Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Row(
-                    children: [
-                      Icon(item.$3, size: 26),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              '${item.$2}',
-                              style: Theme.of(context).textTheme.headlineSmall,
-                            ),
-                            Text(item.$1, maxLines: 2),
-                          ],
+    crossAxisCount: 2,
+    shrinkWrap: true,
+    physics: const NeverScrollableScrollPhysics(),
+    crossAxisSpacing: 10,
+    mainAxisSpacing: 10,
+    childAspectRatio: 1.45,
+    children: items
+        .map(
+          (item) => Card(
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Row(
+                children: [
+                  Icon(item.$3, size: 26),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          '${item.$2}',
+                          style: Theme.of(context).textTheme.headlineSmall,
                         ),
-                      ),
-                    ],
+                        Text(item.$1, maxLines: 2),
+                      ],
+                    ),
                   ),
-                ),
+                ],
               ),
-            )
-            .toList(),
-      );
+            ),
+          ),
+        )
+        .toList(),
+  );
 }
 
 class _DashboardLink extends StatelessWidget {
@@ -548,12 +536,12 @@ class _DashboardLink extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Card(
-        child: ListTile(
-          leading: Icon(icon),
-          title: Text(title),
-          subtitle: Text(subtitle),
-          trailing: const Icon(Icons.chevron_right),
-          onTap: onTap,
-        ),
-      );
+    child: ListTile(
+      leading: Icon(icon),
+      title: Text(title),
+      subtitle: Text(subtitle),
+      trailing: const Icon(Icons.chevron_right),
+      onTap: onTap,
+    ),
+  );
 }

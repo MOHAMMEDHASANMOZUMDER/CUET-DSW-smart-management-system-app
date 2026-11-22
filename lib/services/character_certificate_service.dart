@@ -22,15 +22,15 @@ class CharacterCertificateStatus {
   static const String certificateIssued = 'CERTIFICATE_ISSUED';
 
   static String timelineLabel(String status) => switch (status) {
-        submitted => 'Submitted for Officer Review',
-        correctionRequired => 'Resubmission Required',
-        resubmitted => 'Resubmitted for Officer Review',
-        officerReviewComplete => 'Sent to DSW Director',
-        approved => 'Approved by Director',
-        rejected => 'Rejected by Director',
-        certificateIssued => 'Certificate Issued',
-        _ => status,
-      };
+    submitted => 'Submitted for Officer Review',
+    correctionRequired => 'Resubmission Required',
+    resubmitted => 'Resubmitted for Officer Review',
+    officerReviewComplete => 'Sent to DSW Director',
+    approved => 'Approved by Director',
+    rejected => 'Rejected by Director',
+    certificateIssued => 'Certificate Issued',
+    _ => status,
+  };
 
   static List<String> trackingTimeline(String currentStatus) {
     if (currentStatus == correctionRequired) {
@@ -121,22 +121,19 @@ class CharacterCertificateService {
   Future<List<Application>> getOfficerQueue() async {
     await _requireRole('dsw_officer');
     final all = await _applicationService.getAllApplications();
-    return all
-        .where((item) => item.type == 'character_certificate')
-        .toList();
+    return all.where((item) => item.type == 'character_certificate').toList();
   }
 
   Future<List<Application>> getDirectorQueue() async {
     await _requireRole('dsw_director');
     final all = await _applicationService.getAllApplications();
-    return all
-        .where((item) => item.type == 'character_certificate')
-        .toList();
+    return all.where((item) => item.type == 'character_certificate').toList();
   }
 
   Future<Application> getApplicationById(String applicationId) async {
-    final application =
-        await _applicationService.getApplicationById(applicationId);
+    final application = await _applicationService.getApplicationById(
+      applicationId,
+    );
     if (application == null || application.type != 'character_certificate') {
       throw StateError('Character certificate application not found.');
     }
@@ -173,10 +170,8 @@ class CharacterCertificateService {
       applicationId,
       status: next,
       currentReviewer: officer.uid,
-      officerComment:
-          decision == 'complete_review' ? comment.trim() : null,
-      correctionNote:
-          decision == 'request_correction' ? comment.trim() : null,
+      officerComment: decision == 'complete_review' ? comment.trim() : null,
+      correctionNote: decision == 'request_correction' ? comment.trim() : null,
     );
     await _afterStaffTransition(
       application: application,
@@ -245,10 +240,9 @@ class CharacterCertificateService {
 
     if (application.status == next) return application;
 
-    _ensureStatus(
-      application,
-      [CharacterCertificateStatus.officerReviewComplete],
-    );
+    _ensureStatus(application, [
+      CharacterCertificateStatus.officerReviewComplete,
+    ]);
     if ((comment ?? '').trim().isEmpty) {
       throw StateError('An official Director note is required.');
     }
@@ -357,15 +351,14 @@ class CharacterCertificateService {
     required String action,
     required String performedBy,
     required String comment,
-  }) =>
-      ApplicationHistoryService.instance.addHistoryEntry(
-        ApplicationHistory(
-          id: '',
-          applicationId: applicationId,
-          action: action,
-          performedBy: performedBy,
-          comment: comment,
-          timestamp: DateTime.now(),
-        ),
-      );
+  }) => ApplicationHistoryService.instance.addHistoryEntry(
+    ApplicationHistory(
+      id: '',
+      applicationId: applicationId,
+      action: action,
+      performedBy: performedBy,
+      comment: comment,
+      timestamp: DateTime.now(),
+    ),
+  );
 }

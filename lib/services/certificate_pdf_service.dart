@@ -153,7 +153,10 @@ class CertificatePdfService {
               pw.Text(
                 'Generated electronically by CUET DSW Smart Service.',
                 textAlign: pw.TextAlign.center,
-                style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey700),
+                style: const pw.TextStyle(
+                  fontSize: 8,
+                  color: PdfColors.grey700,
+                ),
               ),
             ],
           ),

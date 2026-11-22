@@ -103,37 +103,37 @@ class Complaint {
   }
 
   Map<String, dynamic> toFirestore({bool useServerTimestamps = false}) => {
-        'id': id,
-        'trackingNumber': trackingNumber,
-        'studentId': studentId,
-        'studentUid': studentUid,
-        'title': title,
-        'description': description,
-        'category': category,
-        'priority': priority,
-        'aiSuggestedCategory': aiSuggestedCategory,
-        'aiSuggestedPriority': aiSuggestedPriority,
-        'aiSummary': aiSummary,
-        'aiSuggestedDepartment': aiSuggestedDepartment,
-        'aiDuplicateScore': aiDuplicateScore,
-        'aiDuplicateComplaintId': aiDuplicateComplaintId,
-        'aiDuplicateReason': aiDuplicateReason,
-        'aiImageAssessment': aiImageAssessment,
-        'status': status,
-        'createdAt': useServerTimestamps
-            ? FieldValue.serverTimestamp()
-            : Timestamp.fromDate(createdAt),
-        'updatedAt': useServerTimestamps
-            ? FieldValue.serverTimestamp()
-            : Timestamp.fromDate(updatedAt),
-        'officerResponse': officerResponse,
-        'directorResponse': directorResponse,
-        'correctionNote': correctionNote,
-        'assignedOfficerUid': assignedOfficerUid,
-        'assignedOfficerName': assignedOfficerName,
-        'isConfidential': isConfidential,
-        'attachments': attachments,
-      };
+    'id': id,
+    'trackingNumber': trackingNumber,
+    'studentId': studentId,
+    'studentUid': studentUid,
+    'title': title,
+    'description': description,
+    'category': category,
+    'priority': priority,
+    'aiSuggestedCategory': aiSuggestedCategory,
+    'aiSuggestedPriority': aiSuggestedPriority,
+    'aiSummary': aiSummary,
+    'aiSuggestedDepartment': aiSuggestedDepartment,
+    'aiDuplicateScore': aiDuplicateScore,
+    'aiDuplicateComplaintId': aiDuplicateComplaintId,
+    'aiDuplicateReason': aiDuplicateReason,
+    'aiImageAssessment': aiImageAssessment,
+    'status': status,
+    'createdAt': useServerTimestamps
+        ? FieldValue.serverTimestamp()
+        : Timestamp.fromDate(createdAt),
+    'updatedAt': useServerTimestamps
+        ? FieldValue.serverTimestamp()
+        : Timestamp.fromDate(updatedAt),
+    'officerResponse': officerResponse,
+    'directorResponse': directorResponse,
+    'correctionNote': correctionNote,
+    'assignedOfficerUid': assignedOfficerUid,
+    'assignedOfficerName': assignedOfficerName,
+    'isConfidential': isConfidential,
+    'attachments': attachments,
+  };
 
   Complaint copyWith({
     String? id,
@@ -163,34 +163,34 @@ class Complaint {
     bool? isConfidential,
     List<Map<String, dynamic>>? attachments,
   }) => Complaint(
-        id: id ?? this.id,
-        trackingNumber: trackingNumber ?? this.trackingNumber,
-        studentId: studentId ?? this.studentId,
-        studentUid: studentUid ?? this.studentUid,
-        title: title ?? this.title,
-        description: description ?? this.description,
-        category: category ?? this.category,
-        priority: priority ?? this.priority,
-        aiSuggestedCategory: aiSuggestedCategory ?? this.aiSuggestedCategory,
-        aiSuggestedPriority: aiSuggestedPriority ?? this.aiSuggestedPriority,
-        aiSummary: aiSummary ?? this.aiSummary,
-        aiSuggestedDepartment: aiSuggestedDepartment ?? this.aiSuggestedDepartment,
-        aiDuplicateScore: aiDuplicateScore ?? this.aiDuplicateScore,
-        aiDuplicateComplaintId:
-            aiDuplicateComplaintId ?? this.aiDuplicateComplaintId,
-        aiDuplicateReason: aiDuplicateReason ?? this.aiDuplicateReason,
-        aiImageAssessment: aiImageAssessment ?? this.aiImageAssessment,
-        status: status ?? this.status,
-        createdAt: createdAt ?? this.createdAt,
-        updatedAt: updatedAt ?? this.updatedAt,
-        officerResponse: officerResponse ?? this.officerResponse,
-        directorResponse: directorResponse ?? this.directorResponse,
-        correctionNote: correctionNote ?? this.correctionNote,
-        assignedOfficerUid: assignedOfficerUid ?? this.assignedOfficerUid,
-        assignedOfficerName: assignedOfficerName ?? this.assignedOfficerName,
-        isConfidential: isConfidential ?? this.isConfidential,
-        attachments: attachments ?? this.attachments,
-      );
+    id: id ?? this.id,
+    trackingNumber: trackingNumber ?? this.trackingNumber,
+    studentId: studentId ?? this.studentId,
+    studentUid: studentUid ?? this.studentUid,
+    title: title ?? this.title,
+    description: description ?? this.description,
+    category: category ?? this.category,
+    priority: priority ?? this.priority,
+    aiSuggestedCategory: aiSuggestedCategory ?? this.aiSuggestedCategory,
+    aiSuggestedPriority: aiSuggestedPriority ?? this.aiSuggestedPriority,
+    aiSummary: aiSummary ?? this.aiSummary,
+    aiSuggestedDepartment: aiSuggestedDepartment ?? this.aiSuggestedDepartment,
+    aiDuplicateScore: aiDuplicateScore ?? this.aiDuplicateScore,
+    aiDuplicateComplaintId:
+        aiDuplicateComplaintId ?? this.aiDuplicateComplaintId,
+    aiDuplicateReason: aiDuplicateReason ?? this.aiDuplicateReason,
+    aiImageAssessment: aiImageAssessment ?? this.aiImageAssessment,
+    status: status ?? this.status,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    officerResponse: officerResponse ?? this.officerResponse,
+    directorResponse: directorResponse ?? this.directorResponse,
+    correctionNote: correctionNote ?? this.correctionNote,
+    assignedOfficerUid: assignedOfficerUid ?? this.assignedOfficerUid,
+    assignedOfficerName: assignedOfficerName ?? this.assignedOfficerName,
+    isConfidential: isConfidential ?? this.isConfidential,
+    attachments: attachments ?? this.attachments,
+  );
 
   static DateTime _toDateTime(dynamic value, {required DateTime fallback}) {
     if (value is Timestamp) return value.toDate();
@@ -205,11 +205,12 @@ class Complaint {
     return result.isEmpty ? null : result;
   }
 
-  static List<Map<String, dynamic>> _attachmentList(dynamic value) => value is List
+  static List<Map<String, dynamic>> _attachmentList(dynamic value) =>
+      value is List
       ? value
-          .whereType<Map>()
-          .map((item) => Map<String, dynamic>.from(item))
-          .toList()
+            .whereType<Map>()
+            .map((item) => Map<String, dynamic>.from(item))
+            .toList()
       : const [];
 
   static double _toDouble(dynamic value) {

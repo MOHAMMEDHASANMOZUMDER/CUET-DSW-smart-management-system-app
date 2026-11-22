@@ -8,6 +8,11 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('Firebase connection smoke test', () {
+    const enabled = bool.fromEnvironment(
+      'RUN_FIREBASE_CONNECTION_TEST',
+      defaultValue: false,
+    );
+
     test(
       'Firestore can write and read a temporary dev-only document',
       () async {
@@ -33,6 +38,9 @@ void main() {
 
         await ref.delete();
       },
+      skip: enabled
+          ? null
+          : 'Set RUN_FIREBASE_CONNECTION_TEST=true only against an approved Firebase emulator or development project.',
     );
   });
 }

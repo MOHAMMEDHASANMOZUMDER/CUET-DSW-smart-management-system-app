@@ -23,30 +23,38 @@ class ApplicationService {
     return Application.fromFirestore(snapshot);
   }
 
-  Stream<Application?> streamApplicationById(String id) =>
-      _applications.doc(id).snapshots().map(
-            (snapshot) =>
-                snapshot.exists ? Application.fromFirestore(snapshot) : null,
-          );
+  Stream<Application?> streamApplicationById(String id) => _applications
+      .doc(id)
+      .snapshots()
+      .map(
+        (snapshot) =>
+            snapshot.exists ? Application.fromFirestore(snapshot) : null,
+      );
 
   Future<List<Application>> getApplicationsByStudentId(String studentId) async {
-    final snapshot =
-        await _applications.where('studentId', isEqualTo: studentId).get();
+    final snapshot = await _applications
+        .where('studentId', isEqualTo: studentId)
+        .get();
     final applications = snapshot.docs.map(Application.fromFirestore).toList();
     applications.sort((a, b) => b.createdAt.compareTo(a.createdAt));
     return applications;
   }
 
-  Future<List<Application>> getApplicationsByStudentUid(String studentUid) async {
-    final snapshot =
-        await _applications.where('studentUid', isEqualTo: studentUid).get();
+  Future<List<Application>> getApplicationsByStudentUid(
+    String studentUid,
+  ) async {
+    final snapshot = await _applications
+        .where('studentUid', isEqualTo: studentUid)
+        .get();
     final applications = snapshot.docs.map(Application.fromFirestore).toList();
     applications.sort((a, b) => b.createdAt.compareTo(a.createdAt));
     return applications;
   }
 
   Future<List<Application>> getApplicationsByStatus(String status) async {
-    final snapshot = await _applications.where('status', isEqualTo: status).get();
+    final snapshot = await _applications
+        .where('status', isEqualTo: status)
+        .get();
     final applications = snapshot.docs.map(Application.fromFirestore).toList();
     applications.sort((a, b) => b.createdAt.compareTo(a.createdAt));
     return applications;
@@ -149,8 +157,8 @@ class ApplicationService {
       fields['purpose'] = purpose.trim();
       fields['description'] = description.trim();
     } else if (application.type == 'hall_transfer') {
-      fields['currentHall'] =
-          (currentHall ?? application.currentHall ?? '').trim();
+      fields['currentHall'] = (currentHall ?? application.currentHall ?? '')
+          .trim();
       fields['requestedHall'] =
           (requestedHall ?? application.requestedHall ?? '').trim();
       fields['reason'] = (reason ?? application.reason ?? '').trim();
@@ -170,14 +178,16 @@ class ApplicationService {
   }
 
   Stream<List<Application>> streamApplicationsForStudent(String studentUid) {
-    return _applications.where('studentUid', isEqualTo: studentUid).snapshots().map(
-      (snapshot) {
-        final applications =
-            snapshot.docs.map(Application.fromFirestore).toList();
-        applications.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-        return applications;
-      },
-    );
+    return _applications
+        .where('studentUid', isEqualTo: studentUid)
+        .snapshots()
+        .map((snapshot) {
+          final applications = snapshot.docs
+              .map(Application.fromFirestore)
+              .toList();
+          applications.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+          return applications;
+        });
   }
 
   // Kept for compatibility. Every Officer can now see all applications.
@@ -189,6 +199,8 @@ class ApplicationService {
     return _applications
         .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((snapshot) => snapshot.docs.map(Application.fromFirestore).toList());
+        .map(
+          (snapshot) => snapshot.docs.map(Application.fromFirestore).toList(),
+        );
   }
 }

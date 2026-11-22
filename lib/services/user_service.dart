@@ -110,6 +110,7 @@ class UserService {
 
     await _users.doc(uid).set(profile.toMap(), SetOptions(merge: true));
   }
+
   Future<void> updateOwnPhone({
     required String uid,
     required String phone,
@@ -150,5 +151,4 @@ class UserService {
       'updatedAt': Timestamp.fromDate(DateTime.now()),
     });
   }
-
 }

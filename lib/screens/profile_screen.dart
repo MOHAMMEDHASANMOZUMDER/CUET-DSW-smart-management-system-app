@@ -115,7 +115,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             return const Center(child: CircularProgressIndicator());
           }
           if (snapshot.hasError) {
-            return Center(child: Text('Could not load profile: ${snapshot.error}'));
+            return Center(
+              child: Text('Could not load profile: ${snapshot.error}'),
+            );
           }
           final student = snapshot.data;
           if (student == null) {
@@ -135,7 +137,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         children: [
                           CircleAvatar(
                             radius: 32,
-                            backgroundColor: Theme.of(context).colorScheme.primary,
+                            backgroundColor: Theme.of(
+                              context,
+                            ).colorScheme.primary,
                             foregroundColor: Colors.white,
                             child: Text(
                               student.name.isEmpty
@@ -153,7 +157,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  student.name.isEmpty ? 'Student' : student.name,
+                                  student.name.isEmpty
+                                      ? 'Student'
+                                      : student.name,
                                   style: Theme.of(context).textTheme.titleLarge,
                                 ),
                                 const SizedBox(height: 4),
@@ -174,8 +180,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       padding: const EdgeInsets.all(18),
                       child: Column(
                         children: [
-                          _ProfileRow(label: 'Student ID', value: student.studentId),
-                          _ProfileRow(label: 'Department', value: student.department),
+                          _ProfileRow(
+                            label: 'Student ID',
+                            value: student.studentId,
+                          ),
+                          _ProfileRow(
+                            label: 'Department',
+                            value: student.department,
+                          ),
                           _ProfileRow(label: 'Batch', value: student.batch),
                           _ProfileRow(label: 'Hall', value: student.hall),
                           _ProfileRow(label: 'Email', value: student.email),
@@ -240,9 +252,9 @@ class _ProfileRow extends StatelessWidget {
             width: 96,
             child: Text(
               label,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600),
             ),
           ),
           Expanded(

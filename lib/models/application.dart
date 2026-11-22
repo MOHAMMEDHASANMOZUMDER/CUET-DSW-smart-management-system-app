@@ -73,30 +73,30 @@ class Application {
   }
 
   Map<String, dynamic> toFirestore({bool useServerTimestamps = false}) => {
-        'id': id,
-        'type': type,
-        'studentId': studentId,
-        'studentUid': studentUid,
-        'status': status,
-        'createdAt': useServerTimestamps
-            ? FieldValue.serverTimestamp()
-            : Timestamp.fromDate(createdAt),
-        'updatedAt': useServerTimestamps
-            ? FieldValue.serverTimestamp()
-            : Timestamp.fromDate(updatedAt),
-        'currentReviewer': currentReviewer,
-        'purpose': purpose,
-        'description': description,
-        'documents': documents,
-        'officerComment': officerComment,
-        'directorComment': directorComment,
-        'correctionNote': correctionNote,
-        'assignedOfficerUid': assignedOfficerUid,
-        'assignedOfficerName': assignedOfficerName,
-        'currentHall': currentHall,
-        'requestedHall': requestedHall,
-        'reason': reason,
-      };
+    'id': id,
+    'type': type,
+    'studentId': studentId,
+    'studentUid': studentUid,
+    'status': status,
+    'createdAt': useServerTimestamps
+        ? FieldValue.serverTimestamp()
+        : Timestamp.fromDate(createdAt),
+    'updatedAt': useServerTimestamps
+        ? FieldValue.serverTimestamp()
+        : Timestamp.fromDate(updatedAt),
+    'currentReviewer': currentReviewer,
+    'purpose': purpose,
+    'description': description,
+    'documents': documents,
+    'officerComment': officerComment,
+    'directorComment': directorComment,
+    'correctionNote': correctionNote,
+    'assignedOfficerUid': assignedOfficerUid,
+    'assignedOfficerName': assignedOfficerName,
+    'currentHall': currentHall,
+    'requestedHall': requestedHall,
+    'reason': reason,
+  };
 
   Application copyWith({
     String? id,
@@ -119,26 +119,26 @@ class Application {
     String? requestedHall,
     String? reason,
   }) => Application(
-        id: id ?? this.id,
-        type: type ?? this.type,
-        studentId: studentId ?? this.studentId,
-        studentUid: studentUid ?? this.studentUid,
-        status: status ?? this.status,
-        createdAt: createdAt ?? this.createdAt,
-        updatedAt: updatedAt ?? this.updatedAt,
-        currentReviewer: currentReviewer ?? this.currentReviewer,
-        purpose: purpose ?? this.purpose,
-        description: description ?? this.description,
-        documents: documents ?? this.documents,
-        officerComment: officerComment ?? this.officerComment,
-        directorComment: directorComment ?? this.directorComment,
-        correctionNote: correctionNote ?? this.correctionNote,
-        assignedOfficerUid: assignedOfficerUid ?? this.assignedOfficerUid,
-        assignedOfficerName: assignedOfficerName ?? this.assignedOfficerName,
-        currentHall: currentHall ?? this.currentHall,
-        requestedHall: requestedHall ?? this.requestedHall,
-        reason: reason ?? this.reason,
-      );
+    id: id ?? this.id,
+    type: type ?? this.type,
+    studentId: studentId ?? this.studentId,
+    studentUid: studentUid ?? this.studentUid,
+    status: status ?? this.status,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    currentReviewer: currentReviewer ?? this.currentReviewer,
+    purpose: purpose ?? this.purpose,
+    description: description ?? this.description,
+    documents: documents ?? this.documents,
+    officerComment: officerComment ?? this.officerComment,
+    directorComment: directorComment ?? this.directorComment,
+    correctionNote: correctionNote ?? this.correctionNote,
+    assignedOfficerUid: assignedOfficerUid ?? this.assignedOfficerUid,
+    assignedOfficerName: assignedOfficerName ?? this.assignedOfficerName,
+    currentHall: currentHall ?? this.currentHall,
+    requestedHall: requestedHall ?? this.requestedHall,
+    reason: reason ?? this.reason,
+  );
 
   static DateTime _toDateTime(dynamic value, {required DateTime fallback}) {
     if (value is Timestamp) return value.toDate();
@@ -155,8 +155,8 @@ class Application {
 
   static List<Map<String, dynamic>> _docList(dynamic value) => value is List
       ? value
-          .whereType<Map>()
-          .map((item) => Map<String, dynamic>.from(item))
-          .toList()
+            .whereType<Map>()
+            .map((item) => Map<String, dynamic>.from(item))
+            .toList()
       : const [];
 }

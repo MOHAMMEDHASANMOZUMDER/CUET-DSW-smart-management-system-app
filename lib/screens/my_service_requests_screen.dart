@@ -14,60 +14,59 @@ class MyServiceRequestsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(title: const Text('Track Service Requests')),
-        body: StreamBuilder<List<ServiceRequest>>(
-          stream: ServiceRequestService.instance.streamForStudent(studentUid),
-          builder: (context, snapshot) {
-            if (snapshot.hasError) {
-              final errorText = snapshot.error.toString();
-              if (errorText.contains('permission-denied') ||
-                  errorText.contains('PERMISSION_DENIED')) {
-                return const BackendSetupNotice(
-                  title: 'Service request access is not enabled yet',
-                  message:
-                      'Deploy the updated Firestore rules, then reopen this screen.',
-                );
-              }
-              return Center(child: Text('Could not load requests: $errorText'));
-            }
-            if (!snapshot.hasData) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            final items = snapshot.data!;
-            if (items.isEmpty) {
-              return const Center(
-                child: Text('No service requests submitted yet.'),
-              );
-            }
-            return ListView.separated(
-              padding: const EdgeInsets.all(16),
-              itemCount: items.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 10),
-              itemBuilder: (context, index) {
-                final item = items[index];
-                return Card(
-                  child: ListTile(
-                    contentPadding: const EdgeInsets.all(14),
-                    title: Text(item.title),
-                    subtitle: Text(
-                      '${item.trackingNumber}\n${item.requestTypeLabel}',
-                    ),
-                    isThreeLine: true,
-                    trailing: StatusChip(label: item.status),
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) =>
-                            ServiceRequestDetailsScreen(request: item),
-                      ),
-                    ),
+    appBar: AppBar(title: const Text('Track Service Requests')),
+    body: StreamBuilder<List<ServiceRequest>>(
+      stream: ServiceRequestService.instance.streamForStudent(studentUid),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          final errorText = snapshot.error.toString();
+          if (errorText.contains('permission-denied') ||
+              errorText.contains('PERMISSION_DENIED')) {
+            return const BackendSetupNotice(
+              title: 'Service request access is not enabled yet',
+              message:
+                  'Deploy the updated Firestore rules, then reopen this screen.',
+            );
+          }
+          return Center(child: Text('Could not load requests: $errorText'));
+        }
+        if (!snapshot.hasData) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        final items = snapshot.data!;
+        if (items.isEmpty) {
+          return const Center(
+            child: Text('No service requests submitted yet.'),
+          );
+        }
+        return ListView.separated(
+          padding: const EdgeInsets.all(16),
+          itemCount: items.length,
+          separatorBuilder: (_, __) => const SizedBox(height: 10),
+          itemBuilder: (context, index) {
+            final item = items[index];
+            return Card(
+              child: ListTile(
+                contentPadding: const EdgeInsets.all(14),
+                title: Text(item.title),
+                subtitle: Text(
+                  '${item.trackingNumber}\n${item.requestTypeLabel}',
+                ),
+                isThreeLine: true,
+                trailing: StatusChip(label: item.status),
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => ServiceRequestDetailsScreen(request: item),
                   ),
-                );
-              },
+                ),
+              ),
             );
           },
-        ),
-      );
+        );
+      },
+    ),
+  );
 }
 
 class ServiceRequestDetailsScreen extends StatelessWidget {
@@ -123,7 +122,8 @@ class ServiceRequestDetailsScreen extends StatelessWidget {
                 ],
               ),
               if (current.status == 'CORRECTION_REQUIRED' &&
-                  FirebaseAuth.instance.currentUser?.uid == current.studentUid) ...[
+                  FirebaseAuth.instance.currentUser?.uid ==
+                      current.studentUid) ...[
                 const SizedBox(height: 12),
                 SizedBox(
                   width: double.infinity,
@@ -197,22 +197,24 @@ class ServiceRequestDetailsScreen extends StatelessWidget {
                 future: ServiceRequestService.instance.history(current.id),
                 builder: (context, historySnapshot) => _InfoCard(
                   title: 'Application history',
-                  children:
-                      (historySnapshot.data ?? const <Map<String, dynamic>>[])
-                          .map((item) {
-                    final ts = item['timestamp'];
-                    final time = ts is Timestamp ? ts.toDate().toLocal() : null;
-                    return ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      leading: const Icon(Icons.timeline),
-                      title: Text(
-                        (item['action'] ?? item['status'] ?? '').toString(),
-                      ),
-                      subtitle: Text(
-                        '${item['note'] ?? ''}${time == null ? '' : '\n$time'}',
-                      ),
-                    );
-                  }).toList(),
+                  children: (historySnapshot.data ?? const <Map<String, dynamic>>[])
+                      .map((item) {
+                        final ts = item['timestamp'];
+                        final time = ts is Timestamp
+                            ? ts.toDate().toLocal()
+                            : null;
+                        return ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: const Icon(Icons.timeline),
+                          title: Text(
+                            (item['action'] ?? item['status'] ?? '').toString(),
+                          ),
+                          subtitle: Text(
+                            '${item['note'] ?? ''}${time == null ? '' : '\n$time'}',
+                          ),
+                        );
+                      })
+                      .toList(),
                 ),
               ),
             ],
@@ -288,9 +290,9 @@ class ServiceRequestDetailsScreen extends StatelessWidget {
       );
     } catch (error) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Resubmission failed: $error')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Resubmission failed: $error')));
     }
   }
 }
@@ -302,16 +304,16 @@ class _InfoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Card(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(title, style: Theme.of(context).textTheme.titleMedium),
-              const SizedBox(height: 10),
-              ...children,
-            ],
-          ),
-        ),
-      );
+    child: Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 10),
+          ...children,
+        ],
+      ),
+    ),
+  );
 }
