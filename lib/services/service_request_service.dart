@@ -343,6 +343,11 @@ class ServiceRequestService {
     // against quick double taps and delayed UI refreshes.
     if (before.status == nextStatus) return;
 
+    if (!ServiceRequest.isValidTransition(before.status, nextStatus)) {
+      throw StateError(
+        'Invalid workflow transition: ${before.status} → $nextStatus',
+      );
+    }
     if (!expectedStatuses.contains(before.status)) {
       throw StateError(
         'Invalid workflow transition: ${before.status} → $nextStatus',

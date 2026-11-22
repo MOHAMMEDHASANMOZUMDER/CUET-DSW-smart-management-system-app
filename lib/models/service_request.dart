@@ -38,6 +38,16 @@ class ServiceRequest {
     }
   }
 
+  static bool isValidTransition(String fromStatus, String toStatus) {
+    const allowed = <String, Set<String>>{
+      'SUBMITTED': {'CORRECTION_REQUIRED', 'OFFICER_REVIEW_COMPLETE'},
+      'CORRECTION_REQUIRED': {'RESUBMITTED'},
+      'RESUBMITTED': {'CORRECTION_REQUIRED', 'OFFICER_REVIEW_COMPLETE'},
+      'OFFICER_REVIEW_COMPLETE': {'APPROVED', 'REJECTED', 'RESOLVED'},
+    };
+    return allowed[fromStatus]?.contains(toStatus) ?? false;
+  }
+
   final String id;
   final String trackingNumber;
   final String studentUid;

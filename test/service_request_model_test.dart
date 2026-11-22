@@ -75,5 +75,20 @@ void main() {
         returnsNormally,
       );
     });
+
+    test('validates the public workflow transition sequence', () {
+      expect(
+        ServiceRequest.isValidTransition(
+          'SUBMITTED',
+          'OFFICER_REVIEW_COMPLETE',
+        ),
+        isTrue,
+      );
+      expect(
+        ServiceRequest.isValidTransition('RESUBMITTED', 'APPROVED'),
+        isFalse,
+      );
+      expect(ServiceRequest.isValidTransition('APPROVED', 'RESOLVED'), isFalse);
+    });
   });
 }
