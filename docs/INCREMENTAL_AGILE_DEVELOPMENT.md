@@ -112,6 +112,8 @@ These are **example planning exercises**, not verified historical sprint records
 - GitHub Actions runs created 2026-11-22:
   - [Push workflow run](https://github.com/MOHAMMEDHASANMOZUMDER/CUET-DSW-smart-management-system-app/actions/runs/45001345161)
   - [Pull request workflow run](https://github.com/MOHAMMEDHASANMOZUMDER/CUET-DSW-smart-management-system-app/actions/runs/45001384428)
+  - [Final push workflow run](https://github.com/MOHAMMEDHASANMOZUMDER/CUET-DSW-smart-management-system-app/actions/runs/45001430141) — success
+  - [Final pull request workflow run](https://github.com/MOHAMMEDHASANMOZUMDER/CUET-DSW-smart-management-system-app/actions/runs/45001434264) — success
 
 ## Acceptance criteria
 
